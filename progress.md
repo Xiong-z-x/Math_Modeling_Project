@@ -130,7 +130,25 @@ verification commands, and the next safe step.
   `True`. Removed the temporary smoke output directory afterward; the formal
   40-iteration result remains in `outputs/problem1/`.
 
+## 2026-04-25
+- Resumed the interrupted Problem 1 completion pass from the recorded project
+  state instead of restarting implementation.
+- Updated `docs/superpowers/plans/2026-04-24-green-logistics-implementation.md`
+  so Tasks 1-4 reflect the completed tested implementation.
+- Updated `项目文件导航.md` to record the current
+  `tests/test_initial_solution.py` count as 4 tests.
+- Reconfirmed the formal 40-iteration output in `outputs/problem1/`: total
+  cost `51870.90`, complete service coverage `True`, capacity feasible `True`,
+  115 depot-to-depot trips, and physical vehicle usage `{'E1': 10, 'F1': 27}`.
+- Ran full regression with `pytest -v`: 26 tests passed in 61.11 s.
+- Ran real-data Problem 1 smoke check with `python problems/problem1.py
+  --iterations 1 --remove-count 4 --seed 20260424 --output-dir
+  outputs/problem1_smoke`: best cost `54933.26`, complete `True`, capacity
+  feasible `True`, 116 trips, physical vehicle usage `{'E1': 10, 'F1': 32}`.
+  Removed the temporary smoke output directory afterward; the formal
+  40-iteration result remains in `outputs/problem1/`.
+
 ## Next Step
-Run final full regression after documentation updates, then either strengthen
-Problem 1 optimization with longer ALNS / stricter service-day assumptions or
-move to Problem 2 green-zone restrictions.
+Either strengthen Problem 1 optimization with longer ALNS / stricter service-day
+assumptions / stronger route reordering, or move to Problem 2 green-zone
+restrictions using the current Problem 1 solver as the baseline.
