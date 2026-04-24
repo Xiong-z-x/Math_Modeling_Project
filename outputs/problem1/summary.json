@@ -1,0 +1,24 @@
+{
+  "route_count": 115,
+  "is_complete": true,
+  "is_capacity_feasible": true,
+  "missing_node_ids": [],
+  "duplicate_node_ids": [],
+  "vehicle_trip_usage_by_type": {
+    "E1": 39,
+    "F1": 76
+  },
+  "vehicle_physical_usage_by_type": {
+    "E1": 10,
+    "F1": 27
+  },
+  "total_distance_km": 13342.282904999649,
+  "carbon_kg": 7620.151072699811,
+  "cost_breakdown": {
+    "fixed_cost": 14800.0,
+    "energy_cost": 23017.230365635714,
+    "carbon_cost": 4953.098197254878,
+    "penalty_cost": 9100.57629476593,
+    "total_cost": 51870.90485765652
+  }
+}
