@@ -43,6 +43,10 @@ Routes in the code are depot-to-depot trips. Trips are assigned to physical vehi
 - `alns_history_csv`: `outputs\problem1\alns_history.csv`
 - `cost_breakdown_png`: `outputs\problem1\cost_breakdown.png`
 - `cost_summary_csv`: `outputs\problem1\cost_summary.csv`
+- `green_zone_capacity_csv`: `outputs\problem1\green_zone_capacity.csv`
+- `late_stop_diagnosis_csv`: `outputs\problem1\late_stop_diagnosis.csv`
+- `late_stop_diagnosis_md`: `outputs\problem1\late_stop_diagnosis.md`
+- `problem2_policy_conflicts_csv`: `outputs\problem1\problem2_policy_conflicts.csv`
 - `quality_summary_csv`: `outputs\problem1\quality_summary.csv`
 - `route_map_png`: `outputs\problem1\route_map.png`
 - `route_summary_csv`: `outputs\problem1\route_summary.csv`

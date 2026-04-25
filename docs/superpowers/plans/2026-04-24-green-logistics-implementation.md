@@ -61,10 +61,10 @@ it when creating, moving, deleting, or renaming project files.
 ## Execution Summary
 - Problem 1 solver implemented through `problems/problem1.py`, with tables and
   figures generated under `outputs/problem1/`.
-- Latest service-quality 40-iteration run: total cost `48644.68`, 116 trips,
+- Latest cost-primary 40-iteration run: total cost `48644.68`, 116 trips,
   10 E1 and 33 F1 physical vehicles, complete service coverage, capacity
   feasible, 4 late stops, max lateness `31.60` min, and no cross-midnight
   returns.
 - Modeling caveat: the official soft time-window cost is unchanged, but ALNS now
-  uses a separate service-quality search score to avoid the earlier
-  cost-priority solution's systematic lateness.
+  uses a separate service-quality search score only as an auxiliary search
+  guide. The formal best solution is selected by official total cost.

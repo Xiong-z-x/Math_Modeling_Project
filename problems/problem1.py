@@ -14,9 +14,11 @@ if __package__ is None or __package__ == "":
 
 from green_logistics.alns import ALNSConfig, run_alns
 from green_logistics.data_processing import load_problem_data
-from green_logistics.initial_solution import construct_initial_route_specs, schedule_route_specs
+from green_logistics.diagnostics import write_problem_diagnostics
+from green_logistics.initial_solution import construct_initial_route_specs
 from green_logistics.metrics import solution_quality_metrics
 from green_logistics.output import write_solution_outputs
+from green_logistics.scheduler import SchedulingConfig, schedule_route_specs
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -27,7 +29,14 @@ def main(argv: list[str] | None = None) -> int:
 
     problem = load_problem_data(data_dir)
     initial_specs = construct_initial_route_specs(problem)
-    initial_solution = schedule_route_specs(problem, initial_specs)
+    scheduling_config = SchedulingConfig(
+        forbid_midnight=args.forbid_midnight,
+        scenario_return_limit_min=args.scenario_return_limit_min,
+        reload_time_min=args.reload_time_min,
+        optimize_departure_grid_min=args.optimize_departure_grid_min,
+        max_departure_delay_min=args.max_departure_delay_min,
+    )
+    initial_solution = schedule_route_specs(problem, initial_specs, config=scheduling_config)
     result = run_alns(
         problem,
         initial_specs=initial_specs,
@@ -37,11 +46,13 @@ def main(argv: list[str] | None = None) -> int:
             seed=args.seed,
             initial_temperature=args.initial_temperature,
             cooling_rate=args.cooling_rate,
+            scheduling_config=scheduling_config,
         ),
     )
     solution = result.best_solution
 
     written = write_solution_outputs(solution, output_dir, problem=problem)
+    written.update(write_problem_diagnostics(problem, solution, output_dir))
     history_path = output_dir / "alns_history.csv"
     pd.DataFrame(
         [
@@ -81,6 +92,11 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=20260424, help="Random seed.")
     parser.add_argument("--initial-temperature", type=float, default=5000.0)
     parser.add_argument("--cooling-rate", type=float, default=0.995)
+    parser.add_argument("--forbid-midnight", action="store_true", help="Scenario knob: reject routes returning after midnight in scheduling.")
+    parser.add_argument("--scenario-return-limit-min", type=float, default=None, help="Scenario soft return limit in absolute minutes, e.g. 1320 for 22:00.")
+    parser.add_argument("--reload-time-min", type=float, default=0.0, help="Scenario reload time between trips on one physical vehicle.")
+    parser.add_argument("--optimize-departure-grid-min", type=int, default=None, help="Optional departure-time grid search step in minutes.")
+    parser.add_argument("--max-departure-delay-min", type=float, default=180.0, help="Max optional departure delay for grid search.")
     return parser.parse_args(argv)
 
 

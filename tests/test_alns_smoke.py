@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from random import Random
 
-from green_logistics.alns import ALNSConfig, run_alns
+from green_logistics.alns import ALNSConfig, _is_better_formal_solution, run_alns
 from green_logistics.data_processing import load_problem_data
 from green_logistics.initial_solution import RouteSpec, construct_initial_route_specs, schedule_route_specs
 from green_logistics.metrics import score_solution
@@ -88,8 +88,20 @@ def test_short_alns_run_on_real_data_keeps_solution_feasible_and_no_worse() -> N
     assert result.initial_solution.total_cost == initial_solution.total_cost
     assert result.best_solution.is_complete
     assert result.best_solution.is_capacity_feasible
-    assert score_solution(result.best_solution) <= score_solution(initial_solution)
+    assert result.best_solution.total_cost <= initial_solution.total_cost
     assert len(result.history) == 9
     assert result.history[0].current_score == score_solution(initial_solution)
     assert result.history[-1].candidate_late_stop_count >= 0
     assert result.history[-1].candidate_max_late_min >= 0.0
+
+
+def test_formal_best_selection_prioritizes_official_total_cost() -> None:
+    problem = _small_problem_data()
+    cheaper_late = evaluate_route(problem, "F1", [10], depart_min=650.0, fixed_cost=0.0)
+    expensive_on_time = evaluate_route(problem, "F1", [10], depart_min=480.0, fixed_cost=400.0)
+    cheaper_solution = evaluate_solution([cheaper_late], required_node_ids={10})
+    expensive_solution = evaluate_solution([expensive_on_time], required_node_ids={10})
+
+    assert cheaper_solution.total_cost < expensive_solution.total_cost
+    assert _is_better_formal_solution(cheaper_solution, expensive_solution)
+    assert not _is_better_formal_solution(expensive_solution, cheaper_solution)

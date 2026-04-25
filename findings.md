@@ -20,6 +20,10 @@ solver code.
 
 ## Supplement Constraints
 - Green delivery zone: circle centered at city center `(0, 0)`, radius `10 km`.
+- The city center `(0, 0)` is not the depot. The depot is data/distance-matrix
+  node `0`; the coordinate file records it at `(20, 20)`. Problem 2 policy
+  checks must use customer green-zone membership and treat depot departure/return
+  as policy-exempt.
 - Speed distribution by period:
   - Congested: 08:00-09:00 and 11:30-13:00, `v(t) ~ N(9.8, 4.7^2)` or table notation equivalent.
   - Smooth: 09:00-10:00 and 13:00-15:00, `v(t) ~ N(55.3, 0.1^2)`.
@@ -66,9 +70,29 @@ solver code.
   stops, maximum lateness about `286` minutes, and `8` cross-midnight returns.
   The 2026-04-25 service-quality optimization keeps the official soft
   time-window cost unchanged, but uses a separate heuristic search score to
-  guide ALNS and physical scheduling. The latest 40-iteration result has `4`
-  late stops, maximum lateness `31.60` minutes, and `0` cross-midnight returns,
-  while preserving complete coverage and capacity feasibility.
+  guide ALNS and physical scheduling. The first improved 40-iteration result
+  had `4` late stops, maximum lateness `31.60` minutes, and `0` cross-midnight
+  returns, while preserving complete coverage and capacity feasibility. This
+  lower-cost comparison baseline is preserved in
+  `outputs/problem1_baseline_quality_48644/`.
+- The second-round C-lite run extracted physical scheduling into
+  `green_logistics/scheduler.py` and corrected formal best-solution selection
+  to use the official `total_cost`, not a zero-lateness surrogate. The formal
+  output in `outputs/problem1/` is therefore the lower-cost 4-late-stop
+  solution: total cost `48644.68`, fixed cost `17200.00`, time-window penalty
+  `933.53`, `116` trips, physical vehicle usage `{'E1': 10, 'F1': 33}`, and
+  `0` cross-midnight returns.
+- Residual-lateness diagnosis on the 4-late baseline classified the stops as:
+  one Type A direct-infeasible stop, two Type B multi-trip cascade stops, and
+  one Type C route-order/composition stop. This justified strengthening
+  scheduler service-quality preference instead of adding a default 22:00 hard
+  return constraint.
+- The Problem 2 precheck on the cost-primary Problem 1 solution reports `19`
+  green-zone service nodes with total green-zone demand `35970.65 kg` and
+  `103.96 m3`. One-trip EV capacity is `48750 kg` and `277.5 m3`, but only
+  `4` green nodes fit E2; `15` need E1-class capacity. The first-question
+  solution has fuel-vehicle green-zone service conflicts during 08:00-16:00,
+  so Problem 2 must actively reassign or retime those stops.
 
 ## Tooling Notes
 - PowerShell inline Python can corrupt Chinese path literals. Prefer filesystem enumeration (`Path.glob`) or explicit UTF-8 handling.

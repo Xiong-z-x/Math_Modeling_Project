@@ -29,6 +29,7 @@ This session is responsible for:
 | 8. Project file navigation | complete | `项目文件导航.md` |
 | 9. Optimization implementation | complete | Problem 1 route evaluator, initial solution, ALNS, outputs, and runner implemented |
 | 10. Service-quality optimization | complete | Metrics, search score, true-lateness operators, and improved Problem 1 result |
+| 11. Problem 1 round-2 C-lite optimization | complete | Scheduler extraction, diagnostics, cost-primary best selection, and Problem 2 preparation hooks |
 
 ## Key Decisions So Far
 - The local original-problem PDF appears to be a Baidu share printout, not the problem statement body. Treat coefficients from reference files as provisional unless also supported by accessible problem material.
@@ -66,7 +67,16 @@ This session is responsible for:
 - `green_logistics/solution.py`: route and solution dataclasses.
 - `green_logistics/metrics.py`: service-quality metrics and search-score
   helpers.
-- `green_logistics/initial_solution.py`: feasible construction heuristic.
+- `green_logistics/initial_solution.py`: feasible construction heuristic and
+  compatibility import for the scheduler.
+- `green_logistics/scheduler.py`: second-stage physical-vehicle scheduler,
+  `SchedulingConfig`, reload/return-limit/departure-grid scenario knobs.
+- `green_logistics/trips.py`: lightweight `TripDescriptor` helpers.
+- `green_logistics/diagnostics.py`: late-stop, green-zone capacity, and Problem
+  2 policy-conflict diagnostics.
+- `green_logistics/policies.py`: policy evaluator interfaces for Problem 1/2.
+- `green_logistics/scheduler_local_search.py`: residual late-route rescue by
+  targeted retyping/splitting.
 - `green_logistics/alns.py` and `green_logistics/operators.py`: adaptive search.
 - `green_logistics/output.py`: structured result export for papers.
 
@@ -79,10 +89,13 @@ This session is responsible for:
 | `green_logistics/solution.py` | complete | `pytest tests/test_solution.py -v` |
 | `green_logistics/metrics.py` | complete | `pytest tests/test_metrics.py -v` |
 | `green_logistics/initial_solution.py` | complete | `pytest tests/test_initial_solution.py -v` |
+| `green_logistics/scheduler.py` / `green_logistics/trips.py` | complete | `pytest tests/test_scheduler.py tests/test_trips.py -v` |
+| `green_logistics/diagnostics.py` / `green_logistics/policies.py` | complete | `pytest tests/test_diagnostics.py tests/test_policies.py -v` |
+| `green_logistics/scheduler_local_search.py` | complete | `pytest tests/test_scheduler_local_search.py -v` |
 | `green_logistics/operators.py` / `green_logistics/alns.py` | complete | `pytest tests/test_alns_smoke.py -v` |
 | `green_logistics/output.py` / `problems/problem1.py` | complete | `pytest tests/test_output.py -v`; real run in `outputs/problem1/` |
 
-Latest Problem 1 service-quality result:
+Latest Problem 1 cost-primary result:
 
 - Command: `python problems/problem1.py --iterations 40 --remove-count 8 --seed 20260424 --output-dir outputs/problem1`
 - Total cost: `48644.68`
@@ -92,3 +105,53 @@ Latest Problem 1 service-quality result:
 - Late stops: `4`
 - Max lateness: `31.60 min`
 - Cross-midnight returns: `0`
+- `outputs/problem1_baseline_quality_48644/` preserves the same cost-primary
+  solution as a rerun backup.
+
+## Compressed Handoff Context For Future Work
+
+Current Problem 1 status:
+- The original cost-priority baseline was complete and capacity feasible, but
+  had systematic lateness: 84 late stops, max lateness about 286 min, and 8
+  cross-midnight returns.
+- The official Problem 1 objective is minimum total delivery cost. The solver
+  keeps the official soft time-window cost unchanged and selects the formal
+  result by `total_cost`; service-quality `search_score` is an auxiliary
+  heuristic and reporting diagnostic, not the final objective.
+- The latest formal result has 4 late stops, max lateness 31.60 min, no
+  cross-midnight returns, and total cost 48644.68.
+
+Current architecture:
+- `Route` means one depot-to-depot trip.
+- `RouteSpec` is the current unassigned trip representation searched by ALNS.
+- `schedule_route_specs()` now lives in `green_logistics/scheduler.py`;
+  `green_logistics/initial_solution.py` keeps a compatibility import.
+- `green_logistics/metrics.py` provides service-quality metrics and
+  `search_score`. Official reported cost remains
+  fixed + energy + carbon + soft time-window penalty.
+- `operators.py` now has true-lateness destroy/split operators that can inspect
+  the current scheduled `Solution`.
+- `diagnostics.py` writes residual lateness classification, green-zone capacity,
+  and first-question Problem 2 policy-conflict reports.
+- `policies.py` provides `NoPolicyEvaluator` and a Problem 2
+  `GreenZonePolicyEvaluator` skeleton.
+
+Important modeling boundaries:
+- Never use virtual `node_id` as a distance-matrix index; use original
+  `customer_id`.
+- Travel time and energy must stay segment-integrated across speed periods.
+- Jensen correction for expected energy must stay in place.
+- Do not add a default 22:00 hard return constraint; the problem statement does
+  not provide it. A 22:00 return limit may be a scenario/sensitivity parameter.
+- The current code assumes 17:00 and later continue with the MEDIUM speed
+  regime. This assumption must be stated in the paper unless later replaced by a
+  configurable scenario.
+
+Potential next architecture step:
+- C-lite refactor is complete: physical scheduling is in
+  `green_logistics/scheduler.py`, `TripDescriptor` lives in
+  `green_logistics/trips.py`, and Problem 2 policy hooks are reserved.
+- Full scheme C, where ALNS only emits trip descriptors and an independent
+  scheduler owns all physical-vehicle neighborhoods, is cleaner long term but
+  should be justified by Problem 2/3 needs rather than by current Problem 1
+  service quality alone.

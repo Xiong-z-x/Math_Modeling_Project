@@ -25,9 +25,11 @@ stops and no cross-midnight routes unless explicitly requested by a scenario.
   main model should not add that as a hard constraint.
 
 ## Design
-Add service-quality metrics as first-class outputs and search inputs. Official
-cost remains unchanged, but ALNS acceptance, best-solution selection, and
-physical-vehicle scheduling use a separate search score.
+Add service-quality metrics as first-class outputs and auxiliary search inputs.
+Official cost remains unchanged. ALNS may use a separate search score for
+candidate acceptance and scheduling tie-breaking, but the formal best solution
+must be selected by official total cost because Problem 1 asks for minimum total
+delivery cost with soft time-window penalties.
 
 The default search score is:
 
@@ -47,8 +49,13 @@ without inventing a non-stated 22:00 hard constraint.
   helpers for both full solutions and single routes.
 - `green_logistics/output.py`: writes quality metrics into `summary.json` and a
   CSV table.
-- `green_logistics/initial_solution.py`: upgrades physical-vehicle selection to
-  service-quality scoring.
+- `green_logistics/scheduler.py`: owns physical-vehicle scheduling and
+  service-quality scoring; `initial_solution.py` keeps only construction and
+  compatibility import.
+- `green_logistics/diagnostics.py`: classifies residual late stops and prepares
+  Problem 2 green-zone diagnostics.
+- `green_logistics/trips.py`: provides lightweight trip descriptors.
+- `green_logistics/policies.py`: reserves Problem 2 policy evaluator hooks.
 - `green_logistics/alns.py`: records and optimizes `search_score` while keeping
   `total_cost` as the official cost.
 - `green_logistics/operators.py`: lets destroy operators inspect the current
@@ -75,5 +82,6 @@ Stretch target after late-route split and true-lateness operators:
 - `max_late_min <= 60`
 - total cost remains explainable as a service-quality tradeoff.
 
-Current 2026-04-25 result exceeds the stretch target: 4 late stops, max lateness
-31.60 min, and no cross-midnight returns.
+Current 2026-04-25 cost-primary result: total cost 48644.68, 4 late stops, max
+lateness 31.60 min, and no cross-midnight returns. A zero-late trial cost more,
+so it is not the formal Problem 1 answer.

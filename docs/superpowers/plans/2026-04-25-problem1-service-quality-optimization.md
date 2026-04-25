@@ -42,6 +42,22 @@ tested steps.
   unstated 22:00 hard constraint.
 - If runtime becomes too high, finish Tasks 1-3 first and record the remaining
   operator work as the next safe phase.
-- Final 40-iteration result after stronger default service-quality weights:
+- Final 40-iteration result after C-lite service-quality improvements:
   total cost `48644.68`, 4 late stops, max lateness `31.60` min, and 0
-  cross-midnight returns.
+  cross-midnight returns. This is the formal cost-primary Problem 1 answer.
+  A zero-late trial had higher official total cost and was rejected as the
+  formal answer.
+
+## Round-2 C-lite Extension
+- [x] Extract physical scheduling to `green_logistics/scheduler.py` and keep
+      legacy import compatibility from `initial_solution.py`.
+- [x] Add `SchedulingConfig` scenario knobs without default 22:00 hard return
+      constraints.
+- [x] Add `TripDescriptor` in `green_logistics/trips.py`.
+- [x] Add `diagnostics.py` reports for late stops, green-zone capacity, and
+      Problem 2 policy conflicts.
+- [x] Add `policies.py` hooks for Problem 2.
+- [x] Add `scheduler_local_search.py` residual late-route rescue.
+- [x] Add `problems/experiments/problem1_convergence.py` and smoke-test it.
+- [x] Correct formal ALNS best-solution selection back to official `total_cost`
+      rather than zero-lateness/search-score dominance.

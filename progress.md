@@ -193,7 +193,110 @@ verification commands, and the next safe step.
   whitespace errors; Git only reported LF-to-CRLF working-copy warnings.
 
 ## Next Step
-Problem 1 service-quality optimization now exceeds the stretch target. Next,
-run final verification after documentation updates, then move to Problem 2
-green-zone restrictions unless a stricter no-lateness scenario is explicitly
-requested.
+Problem 1 cost-primary optimization is restored as the formal answer. Service
+quality diagnostics and scenario tools remain available, but the official
+objective is minimum total delivery cost with soft time-window penalties
+included. Next, run final verification after documentation updates, then move
+to Problem 2 green-zone restrictions.
+
+## 2026-04-25 Round 2
+- Re-read the original problem PDF and supplement with PyPDF2 extraction. The
+  problem statement confirms five vehicle classes, soft time-window costs,
+  service time 20 minutes, startup cost 400, U-shaped fuel/electric formulas,
+  and Problem 2 green-zone fuel restriction from 8:00 to 16:00. The supplement
+  confirms the speed distributions only through 17:00.
+- Audited the new round-2 guidance against code and data facts. Corrected the
+  external wording that implied the depot is at `(0,0)`: the green-zone center
+  is `(0,0)`, while the depot/distance-matrix node 0 is recorded at `(20,20)`.
+- Wrote tests first for the round-2 modules:
+  `tests/test_diagnostics.py`, `tests/test_scheduler.py`, `tests/test_trips.py`,
+  `tests/test_policies.py`, and `tests/test_scheduler_local_search.py`.
+  Verified the RED state with missing-module import errors.
+- Added `green_logistics/scheduler.py` with `SchedulingConfig`,
+  `schedule_route_specs`, reload-time support, optional scenario return limit,
+  optional departure-grid scan, and the previous physical-vehicle scheduling
+  logic. `green_logistics/initial_solution.py` now keeps only initial RouteSpec
+  construction plus a compatibility import for `schedule_route_specs`.
+- Added `green_logistics/trips.py` with `TripDescriptor` and descriptor helpers.
+- Added `green_logistics/diagnostics.py` with late-stop classification,
+  green-zone capacity diagnosis, Problem 2 policy conflict precheck, and
+  diagnostics file writing.
+- Added `green_logistics/policies.py` with `NoPolicyEvaluator` and
+  `GreenZonePolicyEvaluator` skeleton for Problem 2.
+- Added `green_logistics/scheduler_local_search.py` for residual late-route
+  rescue by targeted retyping/splitting.
+- Integrated the scheduler config and late-route rescue into `green_logistics/alns.py`.
+- Updated `problems/problem1.py` to use `SchedulingConfig`, expose scenario CLI
+  knobs, and write diagnostics files.
+- Added `problems/experiments/problem1_convergence.py` for multi-seed,
+  multi-iteration convergence runs.
+- Verified focused round-2 tests with
+  `pytest tests/test_diagnostics.py tests/test_scheduler.py tests/test_trips.py tests/test_policies.py tests/test_scheduler_local_search.py -q`:
+  9 tests passed.
+- Verified integration-focused tests with
+  `pytest tests/test_alns_smoke.py tests/test_initial_solution.py tests/test_output.py tests/test_diagnostics.py tests/test_scheduler.py tests/test_trips.py tests/test_policies.py tests/test_scheduler_local_search.py -q`:
+  19 tests passed.
+- Diagnosed the 4-late baseline. Classification:
+  one Type A direct-infeasible stop, two Type B multi-trip cascade stops, and
+  one Type C route-order/composition stop.
+- Temporarily explored a stronger zero-lateness search setting. It produced a
+  zero-late solution, but with higher official total cost, so it was rejected as
+  the formal Problem 1 answer because the Problem 1 objective is total delivery cost
+  minimum under soft time-window penalties.
+- Corrected `green_logistics/alns.py` so formal best-solution selection is by
+  official `total_cost`; service-quality `search_score` remains only an
+  auxiliary acceptance/exploration score and diagnostic.
+- Added a regression test proving formal best selection prefers lower official
+  total cost even if another solution has better service quality.
+- Regenerated formal cost-primary Problem 1 outputs with
+  `python problems/problem1.py --iterations 40 --remove-count 8 --seed 20260424 --output-dir outputs/problem1`:
+  total cost `48644.68`, fixed `17200.00`, energy `25091.79`, carbon `5419.37`,
+  time-window penalty `933.53`, distance `13384.29 km`, carbon `8337.49 kg`,
+  116 trips, physical vehicle usage `{'E1': 10, 'F1': 33}`, complete `True`,
+  capacity feasible `True`, late stops `4`, max lateness `31.60`, and
+  cross-midnight returns `0`.
+- Recovered/preserved the previous lower-cost 4-late-stop baseline by rerunning
+  old weights into `outputs/problem1_baseline_quality_48644/`:
+  total cost `48644.68`, 116 trips, physical vehicle usage
+  `{'E1': 10, 'F1': 33}`, late stops `4`, max lateness `31.60`, and
+  cross-midnight returns `0`.
+- Ran a convergence-script smoke check with
+  `python problems/experiments/problem1_convergence.py --iterations 2 --seeds 20260424,20260425 --remove-count 4 --output-dir outputs/experiments/problem1_convergence_smoke`:
+  output `summary.csv` was written successfully.
+- Ran final full regression with `pytest -q`: 41 tests passed in 45.24 s.
+- Ran `git diff --check`: no whitespace errors; Git only reported LF-to-CRLF
+  working-copy warnings.
+- Final output sanity check:
+  `outputs/problem1/summary.json` reports complete `True`, capacity feasible
+  `True`, late stops `4`, max lateness `31.60`, cross-midnight returns `0`,
+  total cost `48644.68`, and physical vehicle usage `{'E1': 10, 'F1': 33}`.
+  `outputs/problem1/problem2_policy_conflicts.csv` reports `12` first-question
+  fuel-vehicle green-zone stops during the Problem 2 restricted window.
+- After correcting the formal objective direction, ran final regression with
+  `pytest -q`: 42 tests passed in 79.04 s.
+- Ran `git diff --check`: no whitespace errors; Git only reported LF-to-CRLF
+  working-copy warnings.
+
+## 2026-04-25 Final Closeout Audit
+- Re-read the original problem PDF and supplement text extraction. Confirmed
+  again that Problem 1 asks for minimum total delivery cost; soft time-window
+  lateness is penalized but not forbidden. Confirmed Problem 2 restriction is
+  8:00-16:00 fuel vehicles entering/serving the green delivery zone, and the
+  supplement is authoritative for speed distributions.
+- Scanned project docs for misleading residual wording such as treating
+  zero-lateness as the formal objective. Remaining zero-late mentions are
+  explicitly framed as a rejected higher-cost trial/lesson, not the official
+  answer.
+- Ran a longer cost-primary same-seed trial:
+  `python problems/problem1.py --iterations 100 --remove-count 8 --seed 20260424 --output-dir outputs/problem1_cost_100_trial`.
+  The result matched the 40-iteration formal solution: total cost `48644.68`,
+  4 late stops, max lateness `31.60`, and 0 cross-midnight returns. No lower
+  official-cost solution was found in this trial.
+- Ran a full output integrity check against `outputs/problem1/`: 148 required
+  service nodes served exactly once, no missing/duplicate service nodes, route
+  weight sum equals `285122.64682 kg`, route volume sum equals `772.431 m3`,
+  all route capacities feasible, physical vehicle usage within fleet limits,
+  and diagnostics files present.
+- Final closeout verification: `pytest -q` passed 42 tests in 78.75 s.
+- Final `git diff --check` reported no whitespace errors; only LF-to-CRLF
+  working-copy warnings were shown.

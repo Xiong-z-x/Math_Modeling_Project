@@ -9,9 +9,11 @@ from random import Random
 from typing import Sequence
 
 from .data_processing.loader import ProblemData
-from .initial_solution import RouteSpec, construct_initial_route_specs, schedule_route_specs
+from .initial_solution import RouteSpec, construct_initial_route_specs
 from .metrics import SearchScoreWeights, score_solution, solution_quality_metrics
 from .operators import DESTROY_OPERATORS, REPAIR_OPERATORS
+from .scheduler import SchedulingConfig, schedule_route_specs
+from .scheduler_local_search import rescue_late_routes
 from .solution import Solution
 
 
@@ -25,6 +27,8 @@ class ALNSConfig:
     initial_temperature: float = 5000.0
     cooling_rate: float = 0.995
     score_weights: SearchScoreWeights = field(default_factory=SearchScoreWeights)
+    scheduling_config: SchedulingConfig | None = None
+    postprocess_late_routes: bool = True
 
 
 @dataclass(frozen=True)
@@ -66,9 +70,10 @@ def run_alns(
     """Run a short ALNS optimization from an initial route-spec solution."""
 
     cfg = config or ALNSConfig()
+    schedule_cfg = cfg.scheduling_config or SchedulingConfig(score_weights=cfg.score_weights)
     rng = Random(cfg.seed)
     initial_spec_tuple = tuple(initial_specs or construct_initial_route_specs(problem))
-    initial_solution = schedule_route_specs(problem, initial_spec_tuple)
+    initial_solution = schedule_route_specs(problem, initial_spec_tuple, config=schedule_cfg)
     initial_score = score_solution(initial_solution, cfg.score_weights)
     initial_quality = solution_quality_metrics(initial_solution)
 
@@ -108,7 +113,7 @@ def run_alns(
 
         partial_specs, removed = destroy(problem, current_specs, current_solution, rng, cfg.remove_count)
         candidate_specs = repair(problem, partial_specs, removed)
-        candidate_solution = schedule_route_specs(problem, candidate_specs)
+        candidate_solution = schedule_route_specs(problem, candidate_specs, config=schedule_cfg)
         candidate_score = score_solution(candidate_solution, cfg.score_weights)
         candidate_quality = solution_quality_metrics(candidate_solution)
 
@@ -123,11 +128,7 @@ def run_alns(
             current_solution = candidate_solution
             current_score = candidate_score
 
-        if (
-            candidate_score < best_score
-            and candidate_solution.is_complete
-            and candidate_solution.is_capacity_feasible
-        ):
+        if _is_better_formal_solution(candidate_solution, best_solution):
             best_specs = candidate_specs
             best_solution = candidate_solution
             best_score = candidate_score
@@ -151,6 +152,19 @@ def run_alns(
         )
         temperature *= cfg.cooling_rate
 
+    if cfg.postprocess_late_routes:
+        rescued_specs, rescued_solution = rescue_late_routes(
+            problem,
+            best_specs,
+            best_solution,
+            config=schedule_cfg,
+        )
+        rescued_score = score_solution(rescued_solution, cfg.score_weights)
+        if _is_better_formal_solution(rescued_solution, best_solution):
+            best_specs = rescued_specs
+            best_solution = rescued_solution
+            best_score = rescued_score
+
     return ALNSResult(
         initial_specs=initial_spec_tuple,
         best_specs=best_specs,
@@ -167,3 +181,19 @@ def _accept_candidate(current_cost: float, candidate_cost: float, temperature: f
         return False
     probability = exp(-(candidate_cost - current_cost) / temperature)
     return rng.random() < probability
+
+
+def _is_better_formal_solution(candidate: Solution, incumbent: Solution) -> bool:
+    """Return whether candidate is better for the official Problem 1 objective."""
+
+    if not candidate.is_complete or not candidate.is_capacity_feasible:
+        return False
+    if not incumbent.is_complete or not incumbent.is_capacity_feasible:
+        return True
+    if candidate.total_cost < incumbent.total_cost - 1e-9:
+        return True
+    if abs(candidate.total_cost - incumbent.total_cost) <= 1e-9:
+        candidate_late = sum(stop.late_min for route in candidate.routes for stop in route.stops)
+        incumbent_late = sum(stop.late_min for route in incumbent.routes for stop in route.stops)
+        return candidate_late < incumbent_late - 1e-9
+    return False

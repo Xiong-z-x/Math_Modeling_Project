@@ -51,12 +51,19 @@ The implemented foundation now includes:
    customer-ID distance lookup, and solution coverage checks.
 5. `green_logistics/metrics.py`: service-quality diagnostics and search-score
    helpers for late stops, maximum lateness, and cross-midnight returns.
-6. `green_logistics/initial_solution.py`, `green_logistics/operators.py`, and
-   `green_logistics/alns.py`: feasible construction, service-quality-aware
-   scheduling, true-lateness ALNS operators, and search-score-guided ALNS.
-7. `green_logistics/output.py` and `problems/problem1.py`: Problem 1 CSV/JSON
-   exports, service-quality summaries, and paper-ready plots under
-   `outputs/problem1/`.
+6. `green_logistics/scheduler.py` and `green_logistics/trips.py`: C-lite
+   physical-vehicle scheduling, scheduling scenario knobs, and lightweight trip
+   descriptors for diagnostics and future policy logic.
+7. `green_logistics/initial_solution.py`, `green_logistics/operators.py`,
+   `green_logistics/scheduler_local_search.py`, and `green_logistics/alns.py`:
+   feasible construction, true-lateness ALNS operators, scheduler-level
+   residual-lateness rescue, and search-score-guided ALNS.
+8. `green_logistics/diagnostics.py` and `green_logistics/policies.py`: residual
+   lateness diagnostics, green-zone capacity reports, Problem 2 conflict
+   precheck, and policy evaluator hooks.
+9. `green_logistics/output.py`, `problems/problem1.py`, and
+   `problems/experiments/problem1_convergence.py`: Problem 1 CSV/JSON exports,
+   service-quality summaries, paper-ready plots, and convergence experiments.
 
 Use the data layer through:
 
@@ -76,7 +83,12 @@ Implementation note: `Route` means one depot-to-depot trip. Trips are assigned
 sequentially to physical vehicles, and fleet limits are checked against physical
 vehicle counts.
 
-Latest Problem 1 service-quality run (`2026-04-25`, 40 ALNS iterations):
+Latest Problem 1 cost-primary run (`2026-04-25`, 40 ALNS iterations):
 total cost `48644.68`, fixed cost `17200.00`, time-window penalty `933.53`,
 116 trips, physical vehicles `{'E1': 10, 'F1': 33}`, late stops `4`, maximum
 lateness `31.60` min, and cross-midnight returns `0`.
+
+The solver still reports service-quality diagnostics, but the formal Problem 1
+answer is selected by official total delivery cost. Soft time windows mean a
+small number of late stops can be optimal after their penalties are included in
+the objective.
