@@ -1,3 +1,0 @@
-﻿iteration,current_cost,current_score,best_cost,best_score,candidate_cost,candidate_score,candidate_late_stop_count,candidate_max_late_min,candidate_return_after_midnight_count,accepted,destroy_operator,repair_operator
-0,54892.710600575876,1073728.9909042788,54892.710600575876,1073728.9909042788,54892.710600575876,1073728.9909042788,31,168.1058102026077,1,True,initial,initial
-1,53750.82961718005,1070897.6246626077,53750.82961718005,1070897.6246626077,53750.82961718005,1070897.6246626077,28,168.1058102026077,1,True,random_remove,time_oriented_insert

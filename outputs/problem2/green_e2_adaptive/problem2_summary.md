@@ -6,14 +6,14 @@
 - Policy conflict count: `0`
 - Complete coverage: `True`
 - Capacity feasible: `True`
-- Total cost: `56475.08`
-- Fixed cost: `24800.00`
-- Energy cost: `25144.12`
-- Carbon cost: `5404.17`
-- Time-window penalty: `1126.79`
-- Carbon kg: `8314.11`
-- Physical vehicle usage: `{'E1': 10, 'E2': 15, 'F1': 37}`
-- Quality metrics: `{'late_stop_count': 10, 'total_late_min': 105.36984614959965, 'max_late_min': 32.03947250820056, 'wait_stop_count': 15, 'total_wait_min': 3116.9508194787486, 'max_wait_min': 491.4570271015531, 'return_after_17_count': 71, 'return_after_midnight_count': 0, 'max_return_min': 1437.5128549447327, 'max_trips_per_physical_vehicle': 5, 'mean_trips_per_physical_vehicle': 2.129032258064516}`
+- Total cost: `57109.67`
+- Fixed cost: `22000.00`
+- Energy cost: `25252.07`
+- Carbon cost: `5455.66`
+- Time-window penalty: `4401.94`
+- Carbon kg: `8393.33`
+- Physical vehicle usage: `{'E1': 10, 'E2': 3, 'F1': 42}`
+- Quality metrics: `{'late_stop_count': 28, 'total_late_min': 3788.324061189307, 'max_late_min': 253.00000001314356, 'wait_stop_count': 30, 'total_wait_min': 3734.999022146846, 'max_wait_min': 294.03881285654734, 'return_after_17_count': 72, 'return_after_midnight_count': 0, 'max_return_min': 1429.6666066728421, 'max_trips_per_physical_vehicle': 4, 'mean_trips_per_physical_vehicle': 2.0727272727272728}`
 
 ## Files
 

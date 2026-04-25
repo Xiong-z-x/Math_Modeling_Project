@@ -375,3 +375,62 @@ to Problem 2 green-zone restrictions.
   splitting only as an optional scenario.
 - Still no solver code was modified and no Problem 2 optimization run was
   started in this planning turn.
+
+## 2026-04-25 Problem 2 Implementation And Optimization
+- Implemented the independent Problem 2 pipeline around `Problem2Engine`,
+  explicit data variants, hard green-zone policy checks, policy-aware
+  scheduler/ALNS feasibility gates, and Problem 2 comparison outputs.
+- Verified `DEFAULT_SPLIT` keeps the original 148 service nodes and
+  `GREEN_E2_ADAPTIVE` creates 166 service nodes with 37 green nodes.
+- Confirmed the policy evaluator uses `[480, 960)`: fuel vehicles serving green
+  customers at 08:00 violate the policy, while arrival exactly at 16:00 is
+  allowed.
+- Read `第二问改进思路/GPT：问题二第一轮优化：Problem2_Improvement_Plan.md`.
+  Its diagnosis matched the observed default-split tradeoff: zero conflicts can
+  degrade service quality if policy handling relies on delay. We adopted the
+  actionable pieces as experimental policy operators and `RouteSpec` metadata,
+  but did not rewrite the full four-layer DemandAtom/ServiceVisit architecture
+  because the current virtual-node layer already preserves the needed demand
+  atoms and the full rewrite would add risk before improving cost.
+- Tested experimental policy-specific destroy/repair operators. In the first
+  measured candidate, they worsened total cost (`52377.00`), so they remain an
+  optional `--use-policy-operators` experiment rather than the formal default.
+- Corrected direction after user feedback: because the problem statement does
+  not impose a 24:00 hard return rule, cross-midnight return is a diagnostic,
+  not a formal criterion. Formal selection returned to zero policy conflicts,
+  complete coverage, capacity feasibility, and minimum official total cost.
+- Multi-seed/default-split search found a better feasible seed:
+  `seed=20260427`, `remove_count=16`, `iterations=40`, total cost `49888.84`.
+  Earlier candidates included `seed=37` at `50650.47`, `seed=20260428` at
+  `51676.32`, and `seed=20260429` at `50724.95`.
+- Regenerated formal Problem 2 outputs with
+  `python problems/problem2.py --iterations 40 --remove-count 16 --seed 20260427 --output-dir outputs/problem2`.
+  Recommended variant: `DEFAULT_SPLIT`; policy conflicts `0`; complete `True`;
+  capacity feasible `True`; total cost `49888.84`; fixed `18400.00`; energy
+  `24688.13`; carbon `5327.28`; penalty `1473.43`; distance `13377.44 km`;
+  carbon `8195.81 kg`; 116 trips; physical vehicles
+  `{'E1': 10, 'E2': 1, 'F1': 35}`; late stops `12`; max lateness `124.92`;
+  cross-midnight returns `0`.
+- Added `docs/results/problem2_green_zone_policy_summary.md` and updated
+  `outputs/README.md` to mark `outputs/problem2/` as the formal Problem 2
+  result.
+
+## 2026-04-25 Problem 2 Subdialogue 3 Handoff
+- Re-read the problem statement and supplement before handoff. The confirmed
+  boundary is still: Problem 2 minimizes the official total delivery cost,
+  time windows are soft, and the 08:00-16:00 green-zone fuel restriction is a
+  hard feasibility constraint. The statement does not define a 24:00 hard
+  return rule.
+- Added `docs/design/problem2_subdialogue3_optimization_handoff.md` as the
+  main handoff report and ready-to-use initialization prompt for the next
+  Problem 2 optimization sub-dialogue.
+- Updated `README.md`, `项目文件导航.md`, `task_plan.md`, and `outputs/README.md`
+  so the new handoff document, formal `outputs/problem2/` result, and
+  non-formal scenario/temporary outputs are clearly separated.
+- Cleaned obsolete temporary Problem 2 output folders
+  `outputs/problem2_smoke/` and `outputs/problem2_candidate_seed37_r16/`.
+  `outputs/problem2_return1440_trial/` remains only as a documented scenario
+  check, not as a formal result.
+- The next sub-dialogue should start by diagnosing the current
+  `DEFAULT_SPLIT` maximum lateness of `124.92 min`, while preserving the
+  official priority: lower total cost first, zero policy conflicts always.

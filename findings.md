@@ -124,6 +124,24 @@ solver code.
   finds a lower total cost than the current Problem 1 baseline, treat it first
   as evidence that the heuristic found a different/better feasible region, not
   as proof that the policy itself reduces cost.
+- The formal Problem 2 result generated on 2026-04-25 uses
+  `python problems/problem2.py --iterations 40 --remove-count 16 --seed 20260427 --output-dir outputs/problem2`.
+  The recommended variant is `DEFAULT_SPLIT`: total cost `49888.84`, fixed
+  `18400.00`, energy `24688.13`, carbon `5327.28`, time-window penalty
+  `1473.43`, total distance `13377.44 km`, carbon `8195.81 kg`, 116 trips,
+  physical vehicles `{'E1': 10, 'E2': 1, 'F1': 35}`, complete coverage,
+  capacity feasible, and policy conflicts `0`.
+- `GREEN_E2_ADAPTIVE` remains a valid formal candidate comparison, but the
+  current run costs `57109.67`, so it is not recommended under the official
+  cost-minimization objective. Its better late-stop metrics do not override the
+  objective.
+- A 24:00 return limit is not part of the official Problem 2 feasibility model.
+  Cross-midnight returns should be reported as a diagnostic or scenario knob,
+  not used as a formal selection criterion unless the user explicitly asks for
+  that scenario.
 
 ## Tooling Notes
 - PowerShell inline Python can corrupt Chinese path literals. Prefer filesystem enumeration (`Path.glob`) or explicit UTF-8 handling.
+- Do not batch many long ALNS candidate runs behind one buffered command. Run
+  expensive seeds one at a time or with unbuffered short batches so timeouts do
+  not hide useful partial results.

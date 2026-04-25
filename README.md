@@ -20,6 +20,11 @@ Problem A, "City Green Logistics Scheduling".
   results, diagnostics, and visualization notes.
 - `docs/design/problem2_green_zone_policy_roadmap.md`: integrated Problem 2
   route design after auditing the three new green-zone policy reference plans.
+- `docs/results/problem2_green_zone_policy_summary.md`: paper-oriented
+  closeout summary for the current Problem 2 result and candidate comparison.
+- `docs/design/problem2_subdialogue3_optimization_handoff.md`: one-page
+  handoff report plus a ready-to-use initialization prompt for the next Problem
+  2 optimization sub-dialogue.
 - `docs/superpowers/plans/2026-04-25-problem2-engine-green-e2-adaptive.md`:
   implementation plan for the independent Problem 2 engine and the
   `GREEN_E2_ADAPTIVE` formal candidate mainline.
@@ -116,3 +121,17 @@ than folding Problem 2 into `problems/problem1.py`. The formal candidate set is
 now `DEFAULT_SPLIT` plus `GREEN_E2_ADAPTIVE`; the latter keeps non-green
 service nodes unchanged but splits green customers by E2 capacity so small EVs
 can participate in restricted-period green-zone delivery.
+
+The current formal Problem 2 result is in `outputs/problem2/` and summarized in
+`docs/results/problem2_green_zone_policy_summary.md`. It recommends
+`DEFAULT_SPLIT` with total cost `49888.84`, policy conflicts `0`, complete
+coverage, and capacity feasibility. The formal command is:
+
+```powershell
+python problems/problem2.py --iterations 40 --remove-count 16 --seed 20260427 --output-dir outputs/problem2
+```
+
+The next Problem 2 optimization session should start from
+`docs/design/problem2_subdialogue3_optimization_handoff.md`, which records the
+current technical route, remaining weaknesses, and the exact prompt to continue
+with cost-primary zero-conflict optimization.

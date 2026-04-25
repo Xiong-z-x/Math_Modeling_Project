@@ -7,16 +7,19 @@ materials.
 
 ## Goal
 Build executable and explainable Python solutions for the Huazhong Cup green
-logistics scheduling task. Problem 1 is complete; the current next goal is a
-policy-feasible Problem 2 solver with an independent `Problem2Engine` and
-formal comparison between `DEFAULT_SPLIT` and `GREEN_E2_ADAPTIVE`.
+logistics scheduling task. Problem 1 is complete. Problem 2 now has a
+policy-feasible, cost-primary formal result, and the next goal is to continue
+Problem 2 optimization from a clearly documented handoff without confusing
+formal outputs, scenario checks, and temporary experiments.
 
 ## Current Scope
 This session is responsible for:
-- Reading and auditing the local problem materials.
-- Fixing the modeling direction before implementation.
-- Defining the data-processing layer and algorithm architecture.
-- Preparing durable notes for follow-up implementation sessions.
+- Recording the current Problem 2 state for the next sub-dialogue.
+- Keeping the Problem 2 objective aligned with the statement: minimum official
+  total delivery cost, soft time windows, and hard green-zone policy feasibility.
+- Marking temporary Problem 2 outputs as cleaned or non-formal.
+- Preparing durable notes and an initialization prompt for the next
+  optimization session.
 
 ## Phases
 
@@ -36,6 +39,8 @@ This session is responsible for:
 | 12. Problem 1 closeout documentation | complete | Paper-style summary in `docs/results/problem1_static_scheduling_summary.md` and output ledger in `outputs/README.md` |
 | 13. Problem 2 route design | complete | Audited three Problem 2 reference plans and recorded the implementation roadmap in `docs/design/problem2_green_zone_policy_roadmap.md` |
 | 14. Problem 2 implementation planning | complete | Promoted `GREEN_E2_ADAPTIVE` to a formal candidate mainline and wrote `docs/superpowers/plans/2026-04-25-problem2-engine-green-e2-adaptive.md` |
+| 15. Problem 2 implementation and formal run | complete | Independent `Problem2Engine`, formal `outputs/problem2/`, and result summary in `docs/results/problem2_green_zone_policy_summary.md` |
+| 16. Problem 2 handoff for sub-dialogue 3 | complete | `docs/design/problem2_subdialogue3_optimization_handoff.md`, output cleanup notes, and updated navigation/progress ledgers |
 
 ## Key Decisions So Far
 - The local original-problem PDF appears to be a Baidu share printout, not the problem statement body. Treat coefficients from reference files as provisional unless also supported by accessible problem material.
@@ -81,10 +86,10 @@ This session is responsible for:
 - `green_logistics/diagnostics.py`: late-stop, green-zone capacity, and Problem
   2 policy-conflict diagnostics.
 - `green_logistics/policies.py`: policy evaluator interfaces for Problem 1/2.
-- `green_logistics/problem_variants.py`: planned explicit data-variant layer
+- `green_logistics/problem_variants.py`: explicit Problem 2 data-variant layer
   for `DEFAULT_SPLIT` and `GREEN_E2_ADAPTIVE`.
-- `green_logistics/problem2_engine.py`: planned independent Problem 2
-  orchestrator, not folded into the Problem 1 runner.
+- `green_logistics/problem2_engine.py`: independent Problem 2 orchestrator,
+  not folded into the Problem 1 runner.
 - `green_logistics/scheduler_local_search.py`: residual late-route rescue by
   targeted retyping/splitting.
 - `green_logistics/alns.py` and `green_logistics/operators.py`: adaptive search.
@@ -104,6 +109,7 @@ This session is responsible for:
 | `green_logistics/scheduler_local_search.py` | complete | `pytest tests/test_scheduler_local_search.py -v` |
 | `green_logistics/operators.py` / `green_logistics/alns.py` | complete | `pytest tests/test_alns_smoke.py -v` |
 | `green_logistics/output.py` / `problems/problem1.py` | complete | `pytest tests/test_output.py -v`; real run in `outputs/problem1/` |
+| `green_logistics/problem_variants.py` / `green_logistics/problem2_engine.py` / `problems/problem2.py` | complete | `pytest tests/test_problem_variants.py tests/test_problem2_policy.py tests/test_problem2_engine.py -v`; real run in `outputs/problem2/` |
 
 Latest Problem 1 cost-primary result:
 
@@ -175,9 +181,23 @@ Problem 1 closeout:
   `docs/design/problem2_green_zone_policy_roadmap.md`.
 - Problem 2 implementation plan:
   `docs/superpowers/plans/2026-04-25-problem2-engine-green-e2-adaptive.md`.
-- Next implementation should start from the independent `Problem2Engine`
-  plan. The official Problem 2 objective remains total delivery cost with soft
+- Problem 2 formal output folder: `outputs/problem2/`.
+- Problem 2 paper-ready result summary:
+  `docs/results/problem2_green_zone_policy_summary.md`.
+- Problem 2 continuation handoff for sub-dialogue 3:
+  `docs/design/problem2_subdialogue3_optimization_handoff.md`.
+- The official Problem 2 objective remains total delivery cost with soft
   time-window penalties, while the green-zone fuel restriction is a hard
-  feasibility gate. `GREEN_E2_ADAPTIVE` is now a formal candidate mainline, not
-  a side scenario; it must be implemented through an explicit variant layer so
-  Problem 1 remains reproducible.
+  feasibility gate. The formal recommendation is `DEFAULT_SPLIT` with total
+  cost `49888.84` and zero policy conflicts. `GREEN_E2_ADAPTIVE` remains a
+  formal candidate comparison, but is not recommended because its total cost is
+  higher.
+- Temporary Problem 2 output folders `outputs/problem2_smoke/` and
+  `outputs/problem2_candidate_seed37_r16/` have been cleaned so future sessions
+  do not confuse them with the formal result. `outputs/problem2_return1440_trial/`
+  is retained only as a 24:00 return-limit scenario check; the problem
+  statement does not make that a hard feasibility condition.
+- Next optimization should prioritize lower official total cost with zero
+  policy conflicts. Reducing the current maximum lateness of `124.92 min` is a
+  valuable secondary diagnostic goal, but must not replace the official
+  objective.
