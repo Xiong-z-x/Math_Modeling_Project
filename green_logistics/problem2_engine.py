@@ -31,6 +31,7 @@ PROBLEM2_DESTROY_OPERATOR_NAMES = (
     "late_suffix_remove",
     "midnight_route_remove",
     "late_route_split",
+    "ev_blocking_chain_remove",
     "policy_conflict_remove",
     "green_fuel_route_split",
 )
@@ -72,6 +73,8 @@ class Problem2Engine:
     optimize_departure_grid_min: int | None = None
     max_departure_delay_min: float = 720.0
     use_policy_operators: bool = False
+    use_ev_reservation: bool = False
+    ev_reservation_penalty: float = 0.0
     scenario_return_limit_min: float | None = None
 
     def run_variant(self, variant: ProblemVariant) -> Problem2RunResult:
@@ -81,6 +84,8 @@ class Problem2Engine:
             optimize_departure_grid_min=self.optimize_departure_grid_min,
             max_departure_delay_min=self.max_departure_delay_min,
             scenario_return_limit_min=self.scenario_return_limit_min,
+            ev_reservation_enabled=self.use_ev_reservation,
+            ev_reservation_penalty=self.ev_reservation_penalty,
         )
         initial_specs = construct_problem2_initial_route_specs(variant)
         destroy_names = PROBLEM2_DESTROY_OPERATOR_NAMES if self.use_policy_operators else DEFAULT_DESTROY_OPERATOR_NAMES

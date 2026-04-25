@@ -10,7 +10,7 @@ from .constants import DAY_START_MIN, VEHICLE_TYPES
 from .data_processing.loader import ProblemData
 from .initial_solution import RouteSpec
 from .policies import GreenZonePolicyEvaluator
-from .solution import Solution, evaluate_route
+from .solution import Route, Solution, evaluate_route
 
 
 DestroyOperator = Callable[
@@ -135,6 +135,50 @@ def actual_late_remove(
         for _late_min, node_id in sorted(late_stops, reverse=True)[:remove_count]
     )
     return _remove_nodes(specs, selected), selected
+
+
+def ev_blocking_chain_remove(
+    problem: ProblemData,
+    specs: Sequence[RouteSpec],
+    solution: Solution,
+    rng: Random,
+    remove_count: int,
+) -> tuple[tuple[RouteSpec, ...], tuple[int, ...]]:
+    """Remove a late green EV trip and fuel-feasible predecessors on the same vehicle."""
+
+    best: tuple[float, int, tuple[Route, ...]] | None = None
+    for routes in _routes_by_physical_vehicle(solution).values():
+        ordered = sorted(routes, key=lambda route: route.depart_min)
+        for index, route in enumerate(ordered):
+            if route.vehicle_type.energy_type != "ev":
+                continue
+            late_green_stops = [
+                stop for stop in route.stops
+                if stop.late_min > 1e-9 and _is_green_node(problem, int(stop.service_node_id))
+            ]
+            if not late_green_stops:
+                continue
+            blockers = tuple(
+                prior for prior in ordered[max(0, index - 2):index]
+                if _route_fuel_feasible(problem, prior)
+            )
+            if not blockers:
+                continue
+            worst_stop = max(late_green_stops, key=lambda stop: stop.late_min)
+            candidate = (float(worst_stop.late_min), int(worst_stop.service_node_id), blockers)
+            if best is None or candidate[0] > best[0]:
+                best = candidate
+
+    if best is None:
+        return actual_late_remove(problem, specs, solution, rng, remove_count)
+
+    _late_min, late_node_id, blockers = best
+    selected: list[int] = []
+    for blocker in blockers:
+        selected.extend(int(node_id) for node_id in blocker.service_node_ids)
+    selected.append(late_node_id)
+    unique_selected = tuple(dict.fromkeys(selected[:remove_count]))
+    return _remove_nodes(specs, unique_selected), unique_selected
 
 
 def late_suffix_remove(
@@ -418,6 +462,7 @@ DESTROY_OPERATORS: dict[str, DestroyOperator] = {
     "related_remove": related_remove,
     "time_penalty_remove": time_penalty_remove,
     "actual_late_remove": actual_late_remove,
+    "ev_blocking_chain_remove": ev_blocking_chain_remove,
     "late_suffix_remove": late_suffix_remove,
     "midnight_route_remove": midnight_route_remove,
     "late_route_split": late_route_split,
@@ -516,6 +561,35 @@ def _find_spec_index(specs: Sequence[RouteSpec], route_nodes: tuple[int, ...]) -
         if tuple(spec.service_node_ids) == route_nodes:
             return index
     return None
+
+
+def _routes_by_physical_vehicle(solution: Solution) -> dict[str, list[Route]]:
+    by_vehicle: dict[str, list[Route]] = {}
+    for route in solution.routes:
+        key = route.physical_vehicle_id or f"route-{id(route)}"
+        by_vehicle.setdefault(key, []).append(route)
+    return by_vehicle
+
+
+def _route_fuel_feasible(problem: ProblemData, route: Route) -> bool:
+    policy = GreenZonePolicyEvaluator()
+    for vehicle_type_id, vehicle in VEHICLE_TYPES.items():
+        if vehicle.energy_type != "fuel":
+            continue
+        if route.total_weight_kg > vehicle.max_weight_kg + 1e-9:
+            continue
+        if route.total_volume_m3 > vehicle.max_volume_m3 + 1e-9:
+            continue
+        candidate = evaluate_route(
+            problem,
+            vehicle_type_id,
+            route.service_node_ids,
+            depart_min=route.depart_min,
+            fixed_cost=route.fixed_cost,
+        )
+        if policy.is_route_allowed(problem, candidate):
+            return True
+    return False
 
 
 def _drop_empty_specs(specs: Sequence[RouteSpec]) -> tuple[RouteSpec, ...]:

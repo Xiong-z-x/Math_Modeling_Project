@@ -22,12 +22,17 @@ Problem A, "City Green Logistics Scheduling".
   route design after auditing the three new green-zone policy reference plans.
 - `docs/results/problem2_green_zone_policy_summary.md`: paper-oriented
   closeout summary for the current Problem 2 result and candidate comparison.
+- `docs/results/problem2_modeling_and_solution_closeout.md`: full
+  paper-writing closeout for Problem 2, including assumptions, symbols,
+  formulas, constraints, algorithm design, final results, sensitivity notes,
+  visualization guidance, and the reserved Problem 3 interface.
 - `docs/design/problem2_subdialogue3_optimization_handoff.md`: one-page
   handoff report plus a ready-to-use initialization prompt for the next Problem
   2 optimization sub-dialogue.
 - `docs/superpowers/plans/2026-04-25-problem2-engine-green-e2-adaptive.md`:
   implementation plan for the independent Problem 2 engine and the
-  `GREEN_E2_ADAPTIVE` formal candidate mainline.
+  original `GREEN_E2_ADAPTIVE` formal candidate. Later optimization retained
+  it as a comparison baseline and added `GREEN_HOTSPOT_PARTIAL`.
 - `outputs/README.md`: generated-output ledger. It marks `outputs/problem1/`
   as the formal Problem 1 result and separates audit/experiment folders.
 - `.learnings/`: local self-improvement notes for tool errors and reusable
@@ -118,20 +123,27 @@ Problem 2 route design is now recorded in
 to keep the official total-cost objective, treat the green-zone fuel restriction
 as a hard feasibility gate, and build an independent `Problem2Engine` rather
 than folding Problem 2 into `problems/problem1.py`. The formal candidate set is
-now `DEFAULT_SPLIT` plus `GREEN_E2_ADAPTIVE`; the latter keeps non-green
-service nodes unchanged but splits green customers by E2 capacity so small EVs
-can participate in restricted-period green-zone delivery.
+now `DEFAULT_SPLIT`, `GREEN_E2_ADAPTIVE`, and `GREEN_HOTSPOT_PARTIAL`. Full
+green E2 splitting is retained as a comparison baseline, while the formal
+recommendation currently comes from default-split scheduling with a search-only
+EV reservation score.
 
 The current formal Problem 2 result is in `outputs/problem2/` and summarized in
-`docs/results/problem2_green_zone_policy_summary.md`. It recommends
-`DEFAULT_SPLIT` with total cost `49888.84`, policy conflicts `0`, complete
-coverage, and capacity feasibility. The formal command is:
+`docs/results/problem2_green_zone_policy_summary.md`. The full paper-writing
+closeout is in `docs/results/problem2_modeling_and_solution_closeout.md`. It
+recommends `DEFAULT_SPLIT` with total cost `49239.78`, policy conflicts `0`,
+complete coverage, and capacity feasibility. The previous `49888.84` result is
+backed up in `outputs/problem2_previous_49888_20260425/`. The formal command is:
 
 ```powershell
-python problems/problem2.py --iterations 40 --remove-count 16 --seed 20260427 --output-dir outputs/problem2
+python problems/problem2.py --iterations 40 --remove-count 16 --seed 20260427 --use-ev-reservation --ev-reservation-penalty 250 --output-dir outputs/problem2
 ```
 
-The next Problem 2 optimization session should start from
-`docs/design/problem2_subdialogue3_optimization_handoff.md`, which records the
-current technical route, remaining weaknesses, and the exact prompt to continue
-with cost-primary zero-conflict optimization.
+Problem 2 is now closed for the current modeling round. The service-quality
+sensitivity case `policy operators + EV reservation p500` is preserved in
+`outputs/problem2_experiments/formal_screen_policy_ev_p500/`: total cost
+`50770.72`, policy conflicts `0`, 2 late stops, and max lateness `5.93` min.
+It is useful for paper discussion, but the official answer remains the lower
+cost `DEFAULT_SPLIT` solution. Follow-up work should move to Problem 3 while
+reusing the Problem 2 engine, scheduler, policy evaluator, diagnostics, and
+experiment-ledger interfaces.

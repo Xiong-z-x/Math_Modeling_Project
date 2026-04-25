@@ -1,0 +1,12 @@
+﻿metric,value
+late_stop_count,12.0
+total_late_min,822.0062463350531
+max_late_min,124.92292742043082
+wait_stop_count,20.0
+total_wait_min,2365.2747023105912
+max_wait_min,349.29522457983
+return_after_17_count,68.0
+return_after_midnight_count,0.0
+max_return_min,1429.6666066728421
+max_trips_per_physical_vehicle,5.0
+mean_trips_per_physical_vehicle,2.5217391304347827

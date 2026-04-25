@@ -35,6 +35,9 @@ class SchedulingConfig:
     optimize_departure_grid_min: int | None = None
     max_departure_delay_min: float = 180.0
     policy_evaluator: PolicyEvaluator = field(default_factory=NoPolicyEvaluator)
+    ev_reservation_enabled: bool = False
+    ev_reservation_penalty: float = 0.0
+    green_critical_latest_min: float = 960.0
 
 
 def schedule_route_specs(
@@ -326,9 +329,26 @@ def scheduling_selection_score(problem: ProblemData, route: Route, config: Sched
 
     score = route_quality_score(route, config.score_weights)
     score += config.policy_evaluator.route_penalty(problem, route)
+    score += ev_reservation_candidate_penalty(problem, route, config)
     if config.scenario_return_limit_min is not None and route.return_min > config.scenario_return_limit_min:
         score += config.midnight_penalty + (route.return_min - config.scenario_return_limit_min)
     return score
+
+
+def ev_reservation_candidate_penalty(problem: ProblemData, route: Route, config: SchedulingConfig) -> float:
+    """Heuristic opportunity cost for spending scarce EV capacity on flexible work."""
+
+    if not config.ev_reservation_enabled or config.ev_reservation_penalty <= 0.0:
+        return 0.0
+    if route.vehicle_type.energy_type != "ev":
+        return 0.0
+    if not _problem_has_green_critical_node(problem, config):
+        return 0.0
+    if _route_green_stop_count(problem, route) > 0:
+        return 0.0
+    if not _route_can_fit_any_fuel_vehicle(route):
+        return 0.0
+    return float(config.ev_reservation_penalty)
 
 
 def candidate_vehicle_type_ids(
@@ -361,6 +381,30 @@ def route_demand(problem: ProblemData, service_node_ids: Sequence[int]) -> tuple
     return weight, volume
 
 
+def _problem_has_green_critical_node(problem: ProblemData, config: SchedulingConfig) -> bool:
+    service_nodes = problem.service_nodes
+    return bool(
+        (
+            service_nodes["is_green_zone"].astype(bool)
+            & (service_nodes["latest_min"].astype(float) < float(config.green_critical_latest_min))
+        ).any()
+    )
+
+
+def _route_green_stop_count(problem: ProblemData, route: Route) -> int:
+    lookup = service_node_lookup(problem)
+    return sum(1 for node_id in route.service_node_ids if bool(lookup[int(node_id)]["is_green_zone"]))
+
+
+def _route_can_fit_any_fuel_vehicle(route: Route) -> bool:
+    for vehicle in VEHICLE_TYPES.values():
+        if vehicle.energy_type != "fuel":
+            continue
+        if route.total_weight_kg <= vehicle.max_weight_kg + 1e-9 and route.total_volume_m3 <= vehicle.max_volume_m3 + 1e-9:
+            return True
+    return False
+
+
 def spec_time_key(problem: ProblemData, spec: RouteSpecLike) -> tuple[float, float, int]:
     """Sort key that prioritizes earlier/tighter time windows."""
 
@@ -388,3 +432,5 @@ class RouteSpecLike(Protocol):
 
     vehicle_type_id: str
     service_node_ids: tuple[int, ...]
+    allowed_vehicle_type_ids: tuple[str, ...] | None
+    policy_service_mode: str

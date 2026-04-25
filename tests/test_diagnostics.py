@@ -94,6 +94,84 @@ def test_diagnose_late_stops_classifies_direct_and_cascade_lateness() -> None:
     assert diagnostics.loc[1, "direct_late_min"] == 0.0
 
 
+def test_diagnose_late_stops_flags_ev_cascade_blocker() -> None:
+    service_nodes = pd.DataFrame(
+        [
+            {
+                "node_id": 10,
+                "customer_id": 1,
+                "split_index": 1,
+                "split_count": 1,
+                "demand_weight": 500.0,
+                "demand_volume": 2.0,
+                "earliest_min": 480.0,
+                "latest_min": 650.0,
+                "is_green_zone": True,
+            },
+            {
+                "node_id": 20,
+                "customer_id": 2,
+                "split_index": 1,
+                "split_count": 1,
+                "demand_weight": 700.0,
+                "demand_volume": 3.0,
+                "earliest_min": 480.0,
+                "latest_min": 900.0,
+                "is_green_zone": False,
+            },
+        ]
+    )
+    problem = ProblemData(
+        orders=pd.DataFrame(),
+        coordinates=pd.DataFrame(),
+        distance_matrix=pd.DataFrame(
+            [
+                [0.0, 4.9, 4.9],
+                [4.9, 0.0, 9.8],
+                [4.9, 9.8, 0.0],
+            ],
+            index=[0, 1, 2],
+            columns=[0, 1, 2],
+        ),
+        time_windows=pd.DataFrame(),
+        customer_demands=pd.DataFrame(),
+        service_nodes=service_nodes,
+        node_to_customer={10: 1, 20: 2},
+        no_order_customer_ids=[],
+        green_customer_ids=[1],
+        active_green_customer_ids=[1],
+    )
+    blocker = evaluate_route(
+        problem,
+        "E1",
+        [20],
+        depart_min=480.0,
+        physical_vehicle_id="E1-001",
+        trip_id="T0001",
+    )
+    blocked_green = evaluate_route(
+        problem,
+        "E1",
+        [10],
+        depart_min=700.0,
+        physical_vehicle_id="E1-001",
+        trip_id="T0002",
+    )
+    solution = evaluate_solution([blocker, blocked_green], required_node_ids={10, 20})
+
+    diagnostics = diagnose_late_stops(problem, solution)
+
+    row = diagnostics.iloc[0]
+    assert row["service_node_id"] == 10
+    assert bool(row["ev_cascade_blocked"])
+    assert row["same_vehicle_previous_trip_id"] == "T0001"
+    assert row["previous_route_green_stop_count"] == 0
+    assert bool(row["previous_route_fuel_feasible"])
+    assert row["blocking_previous_trip_id"] == "T0001"
+    assert bool(row["blocking_trip_fuel_feasible"])
+    assert not bool(row["policy_wait_late"])
+
+
 def test_diagnose_green_zone_capacity_reports_ev_and_green_demand() -> None:
     problem = _diagnostic_problem()
 

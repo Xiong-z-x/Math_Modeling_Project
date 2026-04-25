@@ -434,3 +434,118 @@ to Problem 2 green-zone restrictions.
 - The next sub-dialogue should start by diagnosing the current
   `DEFAULT_SPLIT` maximum lateness of `124.92 min`, while preserving the
   official priority: lower total cost first, zero policy conflicts always.
+
+## 2026-04-25 Problem 2 Subdialogue 3 Diagnostic Roadmap
+- Loaded the requested Superpowers, find-skills, self-improvement, and
+  brainstorming workflows. No additional installable skill was needed for this
+  routing task.
+- Re-read the required Problem 2 context: project navigation, README, task
+  plan, progress, findings, solution outline, original problem statement,
+  supplement, current Problem 2 design/result docs, current output CSV/JSON
+  files, core solver modules, and tests.
+- Read the three new second-round reference materials under
+  `第二问进一步优化改进参考思路/`, including the Gemini PDF after forcing UTF-8
+  output during text extraction.
+- Diagnosed the current maximum lateness from
+  `outputs/problem2/default_split/stop_schedule.csv` and
+  `late_stop_diagnosis.csv`: all 12 late stops are currently classified as
+  multi-trip cascade; the worst is customer `8` on `E1-009` in route `T0021`,
+  late by `124.92 min` after a non-green predecessor trip.
+- Cross-checked external method references for ALNS, time-dependent VRP, and
+  pollution/green routing. This supports keeping ALNS and the current
+  time-dependent FIFO travel-time layer while improving policy-aware
+  scheduling and neighborhoods.
+- Added `docs/design/problem2_subdialogue3_optimization_roadmap.md`. The main
+  route is diagnostics first, then lightweight parameter sweeps, optional EV
+  resource reservation in `scheduler.py`, EV blocking-chain neighborhoods in
+  `operators.py` / `scheduler_local_search.py`, and only then bounded hotspot
+  green splitting.
+- No solver code was changed and no formal Problem 2 output was overwritten in
+  this roadmap turn.
+
+## 2026-04-26 Problem 2 Final Route Calibration
+- Re-read the original problem statement and supplement. Confirmed again that
+  Problem 2 keeps the official total-cost objective, green-zone policy is a
+  hard service-time feasibility gate, green-zone center is `(0, 0)`, and the
+  data do not support road-geometry crossing checks.
+- Re-read the three second-round reference files. The final synthesis keeps
+  Claude's cost decomposition and experiment discipline, GPT's EV-cascade and
+  blocking-chain focus, and Gemini's local hotspot-split idea, while rejecting
+  full green-zone E2 splitting as the next mainline.
+- Rechecked code-level feasibility: `RouteSpec` has `allowed_vehicle_type_ids`
+  and `policy_service_mode`, but physical vehicle predecessor chains only
+  exist after `schedule_route_specs()` returns a `Solution`. Therefore
+  blocking-chain operators must inspect `Solution.routes`, not only raw specs.
+- Updated `docs/design/problem2_subdialogue3_optimization_roadmap.md` with a
+  2026-04-26 final calibration section. Also updated the original Problem 2
+  roadmap and handoff docs to point future work to that calibrated route.
+- No solver code was changed and no formal output was overwritten.
+
+## 2026-04-26 Problem 2 EV-Reservation Implementation
+- Implemented the first optimization pass from the calibrated roadmap using
+  test-first changes.
+- Added EV-cascade diagnostics to `green_logistics/diagnostics.py`. The late
+  diagnosis now records predecessor trip IDs, previous-route green counts,
+  fuel feasibility, EV cascade flags, and policy-wait flags.
+- Added optional EV reservation scoring to `green_logistics/scheduler.py`.
+  This is search-only and does not enter the official cost formula.
+- Added `ev_blocking_chain_remove` in `green_logistics/operators.py` and
+  included it in the experimental Problem 2 policy-operator set.
+- Added `GREEN_HOTSPOT_PARTIAL` in `green_logistics/problem_variants.py` and
+  connected `problems/problem2.py` to solve three variants:
+  `DEFAULT_SPLIT`, `GREEN_E2_ADAPTIVE`, and `GREEN_HOTSPOT_PARTIAL`.
+- Added `problems/experiments/problem2_parameter_sweep.py` for incremental
+  parameter ledgers. One 40-iteration single-run attempt timed out before this
+  script wrote a completed row, so the script was hardened to write `started`
+  rows before each run.
+- Ran `pytest -q`: 60 tests passed.
+- Screening experiments showed:
+  - EV reservation penalty `500`: cost `50010.53`, zero conflicts, 6 late
+    stops, max late `21.21`; better service quality but still higher cost than
+    the old formal result.
+  - EV reservation penalty `250`: cost `49239.78`, zero conflicts, complete
+    and capacity feasible; this is lower than the old `49888.84` formal result.
+  - Policy operators plus EV reservation penalty `500`: cost `50770.72`,
+    only 2 late stops and max late `5.93`, but official cost is higher, so it
+    is not the recommendation.
+  - `GREEN_HOTSPOT_PARTIAL` with penalty `250`: cost `52312.11`, so it remains
+    a comparison variant, not the recommended result.
+- Backed up the previous formal output to
+  `outputs/problem2_previous_49888_20260425/`.
+- Promoted the verified three-variant EV-reservation run to `outputs/problem2/`.
+  New recommendation: `DEFAULT_SPLIT`, total cost `49239.78`, policy conflicts
+  `0`, physical vehicles `E1:10, F1:35`, no cross-midnight return.
+
+## 2026-04-26 Problem 2 Closeout And Paper Summary
+- Used the requested skill workflow check. `npx skills find "mathematical modeling report writing"`
+  returned math-reasoning / optimization-adjacent skills, but no direct
+  Huazhong Cup paper-writing skill was installed; the closeout therefore stays
+  grounded in local code, output files, and verified problem facts.
+- Rechecked the formal Problem 2 output files before writing the closeout:
+  `outputs/problem2/recommendation.json`, `variant_comparison.csv`,
+  `default_split/summary.json`, and the service-quality sensitivity ledger
+  under `outputs/problem2_experiments/formal_screen_policy_ev_p500/`.
+- Created `docs/results/problem2_modeling_and_solution_closeout.md` as the
+  complete Problem 2 paper-writing mother document. It covers problem
+  boundaries, assumptions, symbols, cost formulas, constraints, algorithm
+  implementation, final results, variant comparison, service-quality
+  sensitivity, visualization guidance, limitations, and the reserved Problem 3
+  interface.
+- Cleaned redundant promoted intermediate output folders
+  `outputs/problem2_ev_reservation_p250/` and
+  `outputs/problem2_ev_reservation_p250_full/`. The formal answer remains
+  `outputs/problem2/`; the previous `49888.84` result and the `policy
+  operators + EV reservation p500` service-quality case are preserved and
+  documented.
+- Fixed `problems/experiments/problem2_parameter_sweep.py` so completed runs no
+  longer leave a duplicate trailing `started` row, and cleaned the retained
+  Problem 2 experiment `summary.csv` files accordingly.
+- Verified the closeout state with `pytest -q` (`60 passed`) and a JSON/CSV
+  consistency check: recommendation and `default_split/summary.json` both
+  report total cost `49239.782866`; the policy-conflict table has 148 audited
+  stops and 0 true conflict rows.
+- Updated `README.md`, `outputs/README.md`,
+  `docs/results/problem2_green_zone_policy_summary.md`, `task_plan.md`,
+  `findings.md`, and `项目文件导航.md` so future work treats Problem 2 as closed
+  for this modeling round and starts Problem 3 from the existing Problem 2
+  interfaces.

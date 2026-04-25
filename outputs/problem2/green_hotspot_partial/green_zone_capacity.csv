@@ -1,0 +1,2 @@
+﻿green_customer_count,green_service_node_count,green_total_weight_kg,green_total_volume_m3,ev_total_weight_capacity_once_kg,ev_total_volume_capacity_once_m3,e1_capacity_once_weight_kg,e1_capacity_once_volume_m3,e2_capacity_once_weight_kg,e2_capacity_once_volume_m3,green_nodes_feasible_by_E2_count,green_nodes_need_E1_count
+12,24,35970.65312,103.96188000000001,48750.0,277.5,30000.0,150.0,18750.0,127.5,10,14

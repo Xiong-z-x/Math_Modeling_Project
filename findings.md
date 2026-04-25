@@ -145,3 +145,58 @@ solver code.
 - Do not batch many long ALNS candidate runs behind one buffered command. Run
   expensive seeds one at a time or with unbuffered short batches so timeouts do
   not hide useful partial results.
+- During the 2026-04-25 subdialogue-three intake, the current Problem 2 maximum
+  lateness was traced to EV resource cascade rather than direct infeasibility.
+  Customer `8` / service node `13` on route `T0021` uses `E1-009`, arrives at
+  `831.92` against latest `707`, and is late by `124.92 min`; a direct or fresh
+  route can serve it without lateness. The immediate predecessor on the same
+  physical vehicle is a non-green customer `42` trip that appears feasible for
+  F1-class service, so future optimization should test EV reservation and
+  blocking-chain neighborhoods.
+- The three second-round Problem 2 reference files agree on one practical
+  point: full green-zone E2 splitting is too blunt for the current objective.
+  The better near-term path is a bounded hotspot split only after diagnostics,
+  parameter sweeps, and EV-cascade scheduling fixes have been tried.
+- Current `--use-policy-operators` should not be treated as the default path:
+  it targets fuel/green conflicts and post-16 fuel repair more than the
+  observed EV multi-trip bottleneck. Any policy-operator rewrite should remove
+  or retime blocking predecessor trips on scarce EV chains.
+- The 2026-04-26 final Problem 2 route calibration changes the status of
+  `GREEN_E2_ADAPTIVE`: it remains a useful comparison baseline, but should no
+  longer be treated as the next optimization mainline because the measured
+  official total cost `57109.67` is far above `DEFAULT_SPLIT` `49888.84`.
+- The best synthesis of the three second-round reference files is:
+  cost-discipline and seed sweeps from Claude; EV-cascade/blocking-chain
+  repair from GPT; bounded hotspot partial split and search-only HIP/lexicographic
+  ideas from Gemini. The conflict is resolved by prioritizing EV-cascade-aware
+  scheduling/search first, then trying `GREEN_HOTSPOT_PARTIAL` only as a
+  bounded third candidate.
+- Any implementation of a blocking-chain operator must read physical vehicle
+  order from the scheduled `Solution.routes`; the current `RouteSpec` does not
+  contain predecessor/successor trip-chain state.
+- The first executed EV-reservation optimization found a lower official Problem
+  2 cost: `49239.78` versus the previous `49888.84`. The improvement comes
+  primarily from reducing fixed cost to `18000.00` and lowering energy/carbon
+  cost, while keeping policy conflicts at `0`.
+- EV reservation penalty strength is sensitive. Penalty `500` improved service
+  quality but cost `50010.53`; penalty `1000` reduced maximum lateness further
+  in screening but badly worsened cost. Penalty `250` is the best verified
+  official-cost setting so far.
+- The experimental policy-operator path remains secondary: with EV reservation
+  penalty `500`, it achieved excellent service quality (`2` late stops, max
+  late `5.93`), but cost `50770.72`, so it should not be the formal answer
+  under the official objective.
+- `GREEN_HOTSPOT_PARTIAL` is useful as a bounded comparison variant, but the
+  first verified run cost `52312.11`; it should not replace `DEFAULT_SPLIT`
+  unless future search finds a lower official total cost.
+- The 2026-04-26 Problem 2 closeout treats `outputs/problem2/` as the only
+  formal answer folder. The previous `49888.84` run is retained only as
+  `outputs/problem2_previous_49888_20260425/`, and the high-service-quality
+  `policy operators + EV reservation p500` run is retained only as a
+  sensitivity case in
+  `outputs/problem2_experiments/formal_screen_policy_ev_p500/`.
+- `docs/results/problem2_modeling_and_solution_closeout.md` is now the full
+  paper-writing source for Problem 2. It should be used before drafting the
+  final paper because it explicitly separates official objective, hard policy
+  feasibility, auxiliary search penalties, service-quality sensitivity, and
+  limitations such as the absence of road geometry and EV charging constraints.

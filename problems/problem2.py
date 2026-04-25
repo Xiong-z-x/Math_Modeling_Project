@@ -33,11 +33,13 @@ def main(argv: list[str] | None = None) -> int:
         optimize_departure_grid_min=args.optimize_departure_grid_min,
         max_departure_delay_min=args.max_departure_delay_min,
         use_policy_operators=args.use_policy_operators,
+        use_ev_reservation=args.use_ev_reservation,
+        ev_reservation_penalty=args.ev_reservation_penalty,
         scenario_return_limit_min=args.scenario_return_limit_min,
     )
     variants = tuple(
         load_problem_variant(args.data_dir, mode)
-        for mode in (SplitMode.DEFAULT, SplitMode.GREEN_E2_ADAPTIVE)
+        for mode in (SplitMode.DEFAULT, SplitMode.GREEN_E2_ADAPTIVE, SplitMode.GREEN_HOTSPOT_PARTIAL)
     )
     pairs = tuple((variant, engine.run_variant(variant)) for variant in variants)
     results = tuple(result for _variant, result in pairs)
@@ -78,6 +80,8 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--max-departure-delay-min", type=float, default=720.0)
     parser.add_argument("--scenario-return-limit-min", type=float, default=None)
     parser.add_argument("--use-policy-operators", action="store_true", help="Enable experimental Problem 2 destroy/repair operators.")
+    parser.add_argument("--use-ev-reservation", action="store_true", help="Add search-only EV opportunity cost in physical scheduling.")
+    parser.add_argument("--ev-reservation-penalty", type=float, default=0.0, help="Search-only penalty for flexible EV trips when EV reservation is enabled.")
     return parser.parse_args(argv)
 
 

@@ -176,3 +176,39 @@ fixed_cost + energy_cost + carbon_cost + soft_time_window_penalty
 - PyVRP 与 OR-Tools 可作为外部基线参考，但不能直接替代本项目的 Jensen 能耗、绿区政策和自定义多趟排班逻辑。
 
 本文件只确定技术路线和实现优先级，尚未修改求解代码或重新生成 Problem 2 结果。
+
+## 7. 2026-04-26 路线校准说明
+
+本文件是第二问第一轮路线设计，仍可用于理解 `Problem2Engine`、硬政策门控和双候选输出的来龙去脉。但经过正式输出和三份第二轮参考材料复核后，继续优化路线已更新：
+
+- `GREEN_E2_ADAPTIVE` 已被正式结果证明成本过高：当前总成本 `57109.67`，明显高于 `DEFAULT_SPLIT` 的 `49888.84`。因此它保留为对照，不再作为下一轮重点深挖主线。
+- 下一轮主线不是全量绿区 E2 细拆，而是在 `DEFAULT_SPLIT` 上修复 EV 多趟复用级联：增强迟到诊断、参数搜索、EV 资源保留评分、阻塞链算子和调度层局部换车。
+- 若需要新的服务节点变体，应采用受限的 `GREEN_HOTSPOT_PARTIAL`：只对客户 `6, 7, 8, 11` 等证据明确的绿区早窗热点做局部温和拆分，并限制新增节点数量。
+- 最终路线以 `docs/design/problem2_subdialogue3_optimization_roadmap.md` 的 2026-04-26 校准版为准。
+
+这不是推翻本文件，而是基于实测结果对候选主线作出的收敛：第一轮路线负责把第二问跑通并零冲突，下一轮路线负责在不改变题面目标的前提下继续降低官方总成本。
+
+## 8. 2026-04-26 执行后正式结果更新
+
+校准路线的首轮实现已经完成。正式 `outputs/problem2/` 已更新为：
+
+```powershell
+python problems/problem2.py --iterations 40 --remove-count 16 --seed 20260427 --use-ev-reservation --ev-reservation-penalty 250 --output-dir outputs/problem2
+```
+
+推荐结果仍为 `DEFAULT_SPLIT`，但总成本从 `49888.84` 降至 `49239.78`，政策冲突保持 `0`。本次实现新增了 EV reservation 搜索评分、EV 级联诊断、阻塞链实验算子和 `GREEN_HOTSPOT_PARTIAL` 对照变体。
+
+`GREEN_E2_ADAPTIVE` 和 `GREEN_HOTSPOT_PARTIAL` 在新正式对比中仍不推荐：
+
+- `GREEN_E2_ADAPTIVE`: `57504.49`
+- `GREEN_HOTSPOT_PARTIAL`: `52312.11`
+
+旧正式结果已保存到 `outputs/problem2_previous_49888_20260425/`。
+
+## 9. 2026-04-26 收官说明
+
+第二问当前建模轮次已经收官。完整论文写作母稿为：
+
+`docs/results/problem2_modeling_and_solution_closeout.md`
+
+该文档汇总了题意边界、模型假设、符号、成本公式、约束、求解算法、正式结果、服务质量灵敏度方案、可视化建议和第三问接口。正式输出仍为 `outputs/problem2/`；已并入正式结果的中间候选目录已清理，旧 `49888.84` 结果和 `policy operators + EV reservation p500` 服务质量对照均已保留并注明用途。

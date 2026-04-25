@@ -1,5 +1,9 @@
 # 子对话三：第二问进一步优化交接报告与初始化提示词
 
+> 2026-04-26 收官说明：本交接文档保留第二问优化过程和旧提示词作为审计记录。第二问当前正式答案已经更新为
+> `outputs/problem2/` 中的 EV reservation p250 方案，总成本 `49239.78`，政策冲突 `0`。完整论文写作母稿和最终收官状态以
+> `docs/results/problem2_modeling_and_solution_closeout.md` 为准。后续主线转入第三问。
+
 ## 一页式项目进展报告
 
 当前项目位于 `c:\Math_Modeling_Project`。第一问已经完成，正式结果在
@@ -250,3 +254,39 @@ python problems/problem2.py --iterations 40 --remove-count 16 --seed 20260427 --
 
 只有定位清楚后，再决定是调参、改算子、局部拆分，还是增强 scheduler。
 
+## 子对话三首次诊断补记（2026-04-25）
+
+已完成该“建议的第一步”。当前最大迟到不是直达不可行，也不是单路线内部顺序问题，而是 EV 物理车多趟复用级联：最严重停靠为 `T0021` / `E1-009` / 客户 `8` / 服务节点 `13`，迟到 `124.92 min`；该节点 fresh route 可零迟到，但同车前序非绿区客户 `42` 任务占用 E1 至 `796.09`，造成后续绿区早窗任务等待。
+
+综合三份第二轮参考材料后的后续路线已整理到：
+
+`docs/design/problem2_subdialogue3_optimization_roadmap.md`
+
+下一步应优先从诊断增强、轻量参数搜索和 EV 稀缺资源保留评分开始，随后再进入阻塞链算子和热点局部绿区拆分。
+
+## 子对话三最终路线校准补记（2026-04-26）
+
+再次验读题面、补充说明和三份第二轮参考后，继续优化的主线收敛为：
+
+1. 不再继续扩大 `GREEN_E2_ADAPTIVE` 全量细拆；它保留为负面对照。
+2. 优先在 `DEFAULT_SPLIT` 上解决 EV 多趟复用级联：参数搜索、诊断增强、EV opportunity cost、阻塞链 destroy/local-search。
+3. 只有在上述路线仍无法压低官方总成本时，再新增 `GREEN_HOTSPOT_PARTIAL`，对客户 `6, 7, 8, 11` 等绿区热点做受限局部拆分。
+4. 任何迟到感知、HIP 或 EV 保留都只能作为搜索评分/候选生成机制，不能写入官方总成本。
+
+最终技术路线以 `docs/design/problem2_subdialogue3_optimization_roadmap.md` 的 2026-04-26 校准节为准。
+
+## 子对话三执行结果补记（2026-04-26）
+
+已完成首轮代码优化并晋升新正式结果：
+
+- 新正式命令：
+  `python problems/problem2.py --iterations 40 --remove-count 16 --seed 20260427 --use-ev-reservation --ev-reservation-penalty 250 --output-dir outputs/problem2`
+- 推荐 variant：`DEFAULT_SPLIT`
+- 总成本：`49239.78`，比旧正式 `49888.84` 低 `649.06`
+- 政策冲突：`0`
+- 完整覆盖/容量可行：`True` / `True`
+- 物理车辆：`E1:10, F1:35`
+- 迟到点/最大迟到：`12` / `129.44 min`
+- 旧结果备份：`outputs/problem2_previous_49888_20260425/`
+
+注意：服务质量更好的实验方案存在，但官方总成本更高，因此未推荐。例如 policy operators + EV reservation penalty `500` 只有 `2` 个迟到点、最大迟到 `5.93 min`，但总成本 `50770.72`。

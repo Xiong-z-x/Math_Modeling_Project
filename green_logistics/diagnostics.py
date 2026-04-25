@@ -23,10 +23,14 @@ def diagnose_late_stops(problem: ProblemData, solution: Solution) -> pd.DataFram
     node_lookup = _node_lookup(problem)
     split_counts = problem.service_nodes.groupby("customer_id")["node_id"].count().to_dict()
     route_positions = _trip_positions_by_vehicle(solution)
+    previous_routes = _previous_routes_by_vehicle(solution)
     rows: list[dict[str, Any]] = []
 
     for route_index, route in enumerate(solution.routes, start=1):
         trip_position = route_positions.get(id(route), 1)
+        previous_route = previous_routes.get(id(route))
+        previous_green_count = _route_green_stop_count(problem, previous_route, node_lookup)
+        previous_fuel_feasible = _route_fuel_feasible(problem, previous_route) if previous_route is not None else False
         fresh_route = _fresh_route_for_same_trip(problem, route)
         fresh_by_node = {stop.service_node_id: stop for stop in fresh_route.stops}
 
@@ -45,6 +49,24 @@ def diagnose_late_stops(problem: ProblemData, solution: Solution) -> pd.DataFram
                 trip_position_on_vehicle=trip_position,
                 route_depart_min=route.depart_min,
             )
+            is_green = bool(node.get("is_green_zone", False))
+            is_ev = VEHICLE_TYPES[route.vehicle_type_id].energy_type == "ev"
+            ev_cascade_blocked = (
+                is_green
+                and is_ev
+                and direct_late <= 1e-9
+                and fresh_late <= 1e-9
+                and previous_route is not None
+                and trip_position > 1
+            )
+            policy_wait_late = (
+                VEHICLE_TYPES[route.vehicle_type_id].energy_type == "fuel"
+                and is_green
+                and route.depart_min > DAY_START_MIN + 1e-9
+                and stop.arrival_min >= GreenZonePolicyEvaluator().end_min - 1e-9
+                and direct_late <= 1e-9
+            )
+            previous_trip_id = "" if previous_route is None else (previous_route.trip_id or "")
             rows.append(
                 {
                     "route_index": route_index,
@@ -65,7 +87,18 @@ def diagnose_late_stops(problem: ProblemData, solution: Solution) -> pd.DataFram
                     "fresh_route_arrival_min": float(fresh_stop.arrival_min),
                     "fresh_route_late_min": fresh_late,
                     "same_customer_split_count": int(split_counts.get(int(stop.customer_id), 1)),
-                    "is_green_zone": bool(node.get("is_green_zone", False)),
+                    "is_green_zone": is_green,
+                    "policy_induced_late": bool(ev_cascade_blocked or policy_wait_late),
+                    "ev_cascade_blocked": bool(ev_cascade_blocked),
+                    "same_vehicle_previous_trip_id": previous_trip_id,
+                    "previous_route_green_stop_count": int(previous_green_count),
+                    "previous_route_fuel_feasible": bool(previous_fuel_feasible),
+                    "previous_route_arrive_before_restricted_end": bool(
+                        previous_route is not None and previous_route.return_min < GreenZonePolicyEvaluator().end_min
+                    ),
+                    "blocking_previous_trip_id": previous_trip_id if ev_cascade_blocked else "",
+                    "blocking_trip_fuel_feasible": bool(ev_cascade_blocked and previous_fuel_feasible),
+                    "policy_wait_late": bool(policy_wait_late),
                     "classification": classification,
                 }
             )
@@ -191,6 +224,54 @@ def _trip_positions_by_vehicle(solution: Solution) -> dict[int, int]:
         for position, route in enumerate(sorted(routes, key=lambda item: item.depart_min), start=1):
             positions[id(route)] = position
     return positions
+
+
+def _previous_routes_by_vehicle(solution: Solution) -> dict[int, Route | None]:
+    previous: dict[int, Route | None] = {}
+    by_vehicle: dict[str, list[Route]] = {}
+    for route in solution.routes:
+        key = route.physical_vehicle_id or f"route-{id(route)}"
+        by_vehicle.setdefault(key, []).append(route)
+    for routes in by_vehicle.values():
+        prior: Route | None = None
+        for route in sorted(routes, key=lambda item: item.depart_min):
+            previous[id(route)] = prior
+            prior = route
+    return previous
+
+
+def _route_green_stop_count(
+    problem: ProblemData,
+    route: Route | None,
+    node_lookup: dict[int, dict[str, object]] | None = None,
+) -> int:
+    if route is None:
+        return 0
+    lookup = node_lookup or _node_lookup(problem)
+    return sum(1 for node_id in route.service_node_ids if bool(lookup[int(node_id)].get("is_green_zone", False)))
+
+
+def _route_fuel_feasible(problem: ProblemData, route: Route | None) -> bool:
+    if route is None:
+        return False
+    policy = GreenZonePolicyEvaluator()
+    for vehicle_type_id, vehicle in VEHICLE_TYPES.items():
+        if vehicle.energy_type != "fuel":
+            continue
+        if route.total_weight_kg > vehicle.max_weight_kg + 1e-9:
+            continue
+        if route.total_volume_m3 > vehicle.max_volume_m3 + 1e-9:
+            continue
+        candidate = evaluate_route(
+            problem,
+            vehicle_type_id,
+            route.service_node_ids,
+            depart_min=route.depart_min,
+            fixed_cost=route.fixed_cost,
+        )
+        if policy.is_route_allowed(problem, candidate):
+            return True
+    return False
 
 
 def _node_lookup(problem: ProblemData) -> dict[int, dict[str, object]]:

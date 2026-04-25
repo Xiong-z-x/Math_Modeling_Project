@@ -186,12 +186,13 @@ Problem 1 closeout:
   `docs/results/problem2_green_zone_policy_summary.md`.
 - Problem 2 continuation handoff for sub-dialogue 3:
   `docs/design/problem2_subdialogue3_optimization_handoff.md`.
-- The official Problem 2 objective remains total delivery cost with soft
-  time-window penalties, while the green-zone fuel restriction is a hard
-  feasibility gate. The formal recommendation is `DEFAULT_SPLIT` with total
-  cost `49888.84` and zero policy conflicts. `GREEN_E2_ADAPTIVE` remains a
-  formal candidate comparison, but is not recommended because its total cost is
-  higher.
+- Historical Problem 2 status before the EV-reservation pass: the official
+  objective remained total delivery cost with soft time-window penalties, while
+  the green-zone fuel restriction was a hard feasibility gate. The then-formal
+  recommendation was `DEFAULT_SPLIT` with total cost `49888.84` and zero policy
+  conflicts. The current formal result is recorded in the later
+  "Problem 2 EV-Reservation Optimization Status" and "Problem 2 Closeout
+  Status" sections.
 - Temporary Problem 2 output folders `outputs/problem2_smoke/` and
   `outputs/problem2_candidate_seed37_r16/` have been cleaned so future sessions
   do not confuse them with the formal result. `outputs/problem2_return1440_trial/`
@@ -201,3 +202,84 @@ Problem 1 closeout:
   policy conflicts. Reducing the current maximum lateness of `124.92 min` is a
   valuable secondary diagnostic goal, but must not replace the official
   objective.
+
+## Problem 2 Subdialogue 3 Roadmap Status
+
+Current status:
+- The requested subdialogue-three intake is complete: project docs, problem
+  statement, supplement, current Problem 2 outputs, core code, tests, and the
+  three new second-round reference files have been reviewed.
+- The maximum-lateness bottleneck has been localized to EV multi-trip cascade,
+  not direct time-window infeasibility: the worst stop is `T0021` on `E1-009`,
+  customer `8`, service node `13`, late by `124.92 min`, after a non-green
+  predecessor trip that appears fuel-feasible.
+- The combined implementation route is documented in
+  `docs/design/problem2_subdialogue3_optimization_roadmap.md`.
+
+Next implementation phases:
+- P0: preserve the formal `outputs/problem2/` result and build an experiment
+  ledger for multi-seed/remove-count searches.
+- P1: enhance `late_stop_diagnosis.csv` with EV-cascade and policy-induced
+  lateness fields.
+- P2: run lightweight parameter sweeps before changing core algorithms.
+- P3: add optional EV scarcity/reservation scoring to the scheduler.
+- P4: implement EV blocking-chain destroy/local-search neighborhoods.
+- P5: add a cost-first near-cost elite pool only as a search aid.
+- P6: test a bounded `GREEN_HOTSPOT_PARTIAL` variant before considering any
+  larger data-layer rewrite.
+
+Final 2026-04-26 calibration:
+- Treat full `GREEN_E2_ADAPTIVE` as a documented comparison baseline, not the
+  next optimization mainline.
+- Execute the next code work in this order: experiment ledger, EV-cascade
+  diagnostics, scheduler EV opportunity-cost scoring, blocking-chain
+  neighborhoods, near-cost elite search aid, then `GREEN_HOTSPOT_PARTIAL`.
+- Keep all auxiliary penalties and lateness tie-breaks outside the official
+  cost formula; final recommendation remains cost-primary with zero policy
+  conflicts.
+
+## Problem 2 EV-Reservation Optimization Status
+
+Completed in the 2026-04-26 execution pass:
+- Added EV-cascade fields to `late_stop_diagnosis.csv`.
+- Added optional scheduler EV reservation scoring with CLI flags
+  `--use-ev-reservation` and `--ev-reservation-penalty`.
+- Added `ev_blocking_chain_remove` for policy-operator experiments.
+- Added bounded `GREEN_HOTSPOT_PARTIAL` as a third formal comparison variant.
+- Added `problems/experiments/problem2_parameter_sweep.py` for incremental
+  experiment ledgers.
+- Promoted the best verified run to `outputs/problem2/`.
+
+New formal Problem 2 command:
+
+```powershell
+python problems/problem2.py --iterations 40 --remove-count 16 --seed 20260427 --use-ev-reservation --ev-reservation-penalty 250 --output-dir outputs/problem2
+```
+
+New formal recommendation:
+- Variant: `DEFAULT_SPLIT`
+- Total cost: `49239.78`
+- Policy conflicts: `0`
+- Complete/capacity feasible: `True` / `True`
+- Physical vehicles: `E1:10, F1:35`
+- Late stops / max late: `12` / `129.44 min`
+- Previous formal result is preserved at
+  `outputs/problem2_previous_49888_20260425/`.
+
+## Problem 2 Closeout Status
+
+Completed for the current modeling round:
+- Created the full paper-writing closeout document
+  `docs/results/problem2_modeling_and_solution_closeout.md`.
+- Cleaned the promoted intermediate folders
+  `outputs/problem2_ev_reservation_p250/` and
+  `outputs/problem2_ev_reservation_p250_full/` so `outputs/problem2/` remains
+  the only formal Problem 2 answer folder.
+- Preserved `outputs/problem2_previous_49888_20260425/` as the historical
+  backup and `outputs/problem2_experiments/formal_screen_policy_ev_p500/` as
+  the service-quality sensitivity case.
+
+Problem 2 is temporarily closed. The next active modeling phase should start
+Problem 3 and reuse the Problem 2 policy evaluator, scheduler, diagnostics,
+engine, and experiment-ledger interfaces rather than reopening the Problem 2
+objective unless a clearly lower official total-cost candidate is found.

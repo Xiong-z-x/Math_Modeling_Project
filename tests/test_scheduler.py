@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 from green_logistics.data_processing import load_problem_data
+from green_logistics.data_processing.loader import ProblemData
 from green_logistics.initial_solution import RouteSpec
 from green_logistics.policies import GreenZonePolicyEvaluator
 from green_logistics.scheduler import SchedulingConfig, schedule_route_specs
+import pandas as pd
 from tests.test_solution import _small_problem_data
 
 
@@ -67,3 +69,67 @@ def test_policy_scheduler_can_delay_fuel_green_trip_until_restriction_end() -> N
 
     assert policy.solution_violation_count(problem, solution) == 0
     assert solution.routes[0].stops[0].arrival_min >= 960.0
+
+
+def test_ev_reservation_keeps_ev_for_critical_green_trip() -> None:
+    service_nodes = pd.DataFrame(
+        [
+            {
+                "node_id": 10,
+                "customer_id": 1,
+                "split_index": 1,
+                "split_count": 1,
+                "demand_weight": 500.0,
+                "demand_volume": 2.0,
+                "earliest_min": 480.0,
+                "latest_min": 650.0,
+                "is_green_zone": False,
+            },
+            {
+                "node_id": 20,
+                "customer_id": 2,
+                "split_index": 1,
+                "split_count": 1,
+                "demand_weight": 600.0,
+                "demand_volume": 2.5,
+                "earliest_min": 500.0,
+                "latest_min": 700.0,
+                "is_green_zone": True,
+            },
+        ]
+    )
+    problem = ProblemData(
+        orders=pd.DataFrame(),
+        coordinates=pd.DataFrame(),
+        distance_matrix=pd.DataFrame(
+            [
+                [0.0, 4.9, 4.9],
+                [4.9, 0.0, 9.8],
+                [4.9, 9.8, 0.0],
+            ],
+            index=[0, 1, 2],
+            columns=[0, 1, 2],
+        ),
+        time_windows=pd.DataFrame(),
+        customer_demands=pd.DataFrame(),
+        service_nodes=service_nodes,
+        node_to_customer={10: 1, 20: 2},
+        no_order_customer_ids=[],
+        green_customer_ids=[2],
+        active_green_customer_ids=[2],
+    )
+    specs = (
+        RouteSpec("E1", (10,)),
+        RouteSpec("E1", (20,), allowed_vehicle_type_ids=("E1", "E2"), policy_service_mode="ev_green"),
+    )
+
+    solution = schedule_route_specs(
+        problem,
+        specs,
+        vehicle_counts={"E1": 1, "F1": 1},
+        config=SchedulingConfig(ev_reservation_enabled=True, ev_reservation_penalty=100_000.0),
+    )
+
+    by_node = {route.service_node_ids[0]: route.vehicle_type_id for route in solution.routes}
+    assert by_node[10] == "F1"
+    assert by_node[20] == "E1"

@@ -1,34 +1,33 @@
 {
   "recommended_variant": "default_split",
-  "total_cost": 49888.84099695106,
+  "total_cost": 49239.7828661846,
   "policy_conflict_count": 0,
   "is_complete": true,
   "is_capacity_feasible": true,
   "service_node_count": 148,
   "green_service_node_count": 19,
   "cost_breakdown": {
-    "fixed_cost": 18400.0,
-    "energy_cost": 24688.131364052828,
-    "carbon_cost": 5327.279526848829,
-    "penalty_cost": 1473.4301060494079,
-    "total_cost": 49888.84099695106
+    "fixed_cost": 18000.0,
+    "energy_cost": 24551.89593682962,
+    "carbon_cost": 5301.719178860577,
+    "penalty_cost": 1386.1677504943991,
+    "total_cost": 49239.7828661846
   },
   "quality_metrics": {
     "late_stop_count": 12,
-    "total_late_min": 822.0062463350531,
-    "max_late_min": 124.92292742043082,
-    "wait_stop_count": 20,
-    "total_wait_min": 2365.2747023105912,
-    "max_wait_min": 349.29522457983,
-    "return_after_17_count": 68,
+    "total_late_min": 660.7535031449657,
+    "max_late_min": 129.44182024141378,
+    "wait_stop_count": 17,
+    "total_wait_min": 2506.6194936207835,
+    "max_wait_min": 401.26158149635603,
+    "return_after_17_count": 69,
     "return_after_midnight_count": 0,
-    "max_return_min": 1429.6666066728421,
+    "max_return_min": 1394.3166197880698,
     "max_trips_per_physical_vehicle": 5,
-    "mean_trips_per_physical_vehicle": 2.5217391304347827
+    "mean_trips_per_physical_vehicle": 2.5555555555555554
   },
   "vehicle_physical_usage_by_type": {
     "E1": 10,
-    "E2": 1,
     "F1": 35
   },
   "variant_comparison_csv": "outputs\\problem2\\variant_comparison.csv",

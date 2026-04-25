@@ -1,0 +1,2 @@
+﻿variant,iterations,remove_count,seed,use_policy_operators,use_ev_reservation,ev_reservation_penalty,runtime_seconds,total_cost,fixed_cost,energy_cost,carbon_cost,penalty_cost,policy_conflict_count,is_complete,is_capacity_feasible,late_stop_count,total_late_min,max_late_min,return_after_midnight_count,physical_vehicle_usage,trip_usage
+default_split,1,4,20260427,False,True,5000.0,11.649145000003045,57098.860462726276,20800.0,29033.14251867556,6291.510327912788,974.2076161379268,0,True,True,19,1169.049139365512,168.1058102026077,1,"{'E1': 10, 'F1': 42}","{'E1': 17, 'F1': 99}"

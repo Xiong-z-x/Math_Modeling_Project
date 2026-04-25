@@ -67,3 +67,37 @@ def test_green_e2_adaptive_node_mapping_is_complete_and_unique():
     mapped_customers = Counter(adaptive.data.node_to_customer.values())
     demand_counts = _split_counts(adaptive.data)
     assert mapped_customers == Counter(demand_counts)
+
+
+def test_green_hotspot_partial_is_bounded_and_preserves_demand():
+    default = load_problem_variant(".", SplitMode.DEFAULT)
+    hotspot = load_problem_variant(".", SplitMode.GREEN_HOTSPOT_PARTIAL)
+
+    assert hotspot.name == "green_hotspot_partial"
+    assert 148 < len(hotspot.data.service_nodes) < 166
+    assert 19 < int(hotspot.data.service_nodes["is_green_zone"].sum()) < 37
+    assert hotspot.data.service_nodes["demand_weight"].sum() == pytest.approx(
+        default.data.service_nodes["demand_weight"].sum()
+    )
+    assert hotspot.data.service_nodes["demand_volume"].sum() == pytest.approx(
+        default.data.service_nodes["demand_volume"].sum()
+    )
+
+    default_counts = _split_counts(default.data)
+    hotspot_counts = _split_counts(hotspot.data)
+    hotspot_customers = {6, 7, 8, 11}
+    for customer_id, split_count in default_counts.items():
+        if customer_id not in hotspot_customers:
+            assert hotspot_counts[customer_id] == split_count
+
+    e2 = VEHICLE_TYPES["E2"]
+    hotspot_nodes = hotspot.data.service_nodes[
+        hotspot.data.service_nodes["customer_id"].isin(hotspot_customers)
+    ]
+    e2_fit_count = int(
+        (
+            (hotspot_nodes["demand_weight"] <= e2.max_weight_kg + 1e-9)
+            & (hotspot_nodes["demand_volume"] <= e2.max_volume_m3 + 1e-9)
+        ).sum()
+    )
+    assert e2_fit_count >= len(hotspot_customers)

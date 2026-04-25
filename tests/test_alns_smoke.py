@@ -6,13 +6,16 @@ from __future__ import annotations
 from random import Random
 
 from dataclasses import replace
+import pandas as pd
 
 from green_logistics.alns import ALNSConfig, _is_better_formal_solution, run_alns
 from green_logistics.data_processing import load_problem_data
+from green_logistics.data_processing.loader import ProblemData
 from green_logistics.initial_solution import RouteSpec, construct_initial_route_specs, schedule_route_specs
 from green_logistics.metrics import score_solution
 from green_logistics.operators import (
     actual_late_remove,
+    ev_blocking_chain_remove,
     greedy_insert,
     late_route_split,
     late_suffix_remove,
@@ -56,6 +59,81 @@ def test_true_lateness_destroy_operators_use_current_scheduled_solution() -> Non
     assert removed == (20,)
     served = sorted(node_id for spec in partial_specs for node_id in spec.service_node_ids)
     assert served == [10]
+
+
+def test_ev_blocking_chain_remove_targets_previous_fuel_feasible_blocker() -> None:
+    service_nodes = pd.DataFrame(
+        [
+            {
+                "node_id": 10,
+                "customer_id": 1,
+                "split_index": 1,
+                "split_count": 1,
+                "demand_weight": 500.0,
+                "demand_volume": 2.0,
+                "earliest_min": 480.0,
+                "latest_min": 650.0,
+                "is_green_zone": True,
+            },
+            {
+                "node_id": 20,
+                "customer_id": 2,
+                "split_index": 1,
+                "split_count": 1,
+                "demand_weight": 700.0,
+                "demand_volume": 3.0,
+                "earliest_min": 480.0,
+                "latest_min": 900.0,
+                "is_green_zone": False,
+            },
+        ]
+    )
+    problem = ProblemData(
+        orders=pd.DataFrame(),
+        coordinates=pd.DataFrame(),
+        distance_matrix=pd.DataFrame(
+            [
+                [0.0, 4.9, 4.9],
+                [4.9, 0.0, 9.8],
+                [4.9, 9.8, 0.0],
+            ],
+            index=[0, 1, 2],
+            columns=[0, 1, 2],
+        ),
+        time_windows=pd.DataFrame(),
+        customer_demands=pd.DataFrame(),
+        service_nodes=service_nodes,
+        node_to_customer={10: 1, 20: 2},
+        no_order_customer_ids=[],
+        green_customer_ids=[1],
+        active_green_customer_ids=[1],
+    )
+    specs = (
+        RouteSpec("E1", (20,)),
+        RouteSpec("E1", (10,)),
+    )
+    blocker = evaluate_route(
+        problem,
+        "E1",
+        [20],
+        depart_min=480.0,
+        physical_vehicle_id="E1-001",
+        trip_id="T0001",
+    )
+    blocked_green = evaluate_route(
+        problem,
+        "E1",
+        [10],
+        depart_min=700.0,
+        physical_vehicle_id="E1-001",
+        trip_id="T0002",
+    )
+    solution = evaluate_solution([blocker, blocked_green], required_node_ids={10, 20})
+
+    partial_specs, removed = ev_blocking_chain_remove(problem, specs, solution, Random(5), remove_count=2)
+
+    assert set(removed) == {10, 20}
+    assert [node_id for spec in partial_specs for node_id in spec.service_node_ids] == []
 
 
 def test_late_suffix_midnight_and_split_operators_target_bad_routes() -> None:
