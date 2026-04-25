@@ -26,6 +26,9 @@ Problem A, "City Green Logistics Scheduling".
   paper-writing closeout for Problem 2, including assumptions, symbols,
   formulas, constraints, algorithm design, final results, sensitivity notes,
   visualization guidance, and the reserved Problem 3 interface.
+- `docs/design/problem3_subdialogue4_initialization_prompt.md`: current
+  project-status report and ready-to-copy initialization prompt for the next
+  sub-dialogue that will solve Problem 3.
 - `docs/design/problem2_subdialogue3_optimization_handoff.md`: one-page
   handoff report plus a ready-to-use initialization prompt for the next Problem
   2 optimization sub-dialogue.
@@ -147,3 +150,9 @@ It is useful for paper discussion, but the official answer remains the lower
 cost `DEFAULT_SPLIT` solution. Follow-up work should move to Problem 3 while
 reusing the Problem 2 engine, scheduler, policy evaluator, diagnostics, and
 experiment-ledger interfaces.
+
+The Problem 3 handoff and initialization prompt is now in
+`docs/design/problem3_subdialogue4_initialization_prompt.md`. It records the
+current clean output layout, required reading order, modeling red lines,
+recommended dynamic-response route, validation checklist, and a prompt that can
+be copied into the next sub-dialogue.

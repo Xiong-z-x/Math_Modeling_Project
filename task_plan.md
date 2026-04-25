@@ -283,3 +283,20 @@ Problem 2 is temporarily closed. The next active modeling phase should start
 Problem 3 and reuse the Problem 2 policy evaluator, scheduler, diagnostics,
 engine, and experiment-ledger interfaces rather than reopening the Problem 2
 objective unless a clearly lower official total-cost candidate is found.
+
+## Problem 3 Handoff Preparation
+
+Completed:
+- Added `docs/design/problem3_subdialogue4_initialization_prompt.md` as the
+  handoff report and ready-to-copy prompt for the next sub-dialogue.
+- Confirmed the output layout is clean: `outputs/problem1/` and
+  `outputs/problem2/` are formal, `outputs/problem2_previous_49888_20260425/`
+  is historical backup, and `outputs/problem2_experiments/` is experiment
+  ledger only.
+- Recorded that Problem 3 should create `outputs/problem3/` and must not
+  overwrite the first- or second-question formal outputs.
+
+Next phase:
+- Start Problem 3 by re-reading the original problem statement and supplement,
+  then build a dynamic-event response roadmap before implementing
+  `problems/problem3.py` and its tests.

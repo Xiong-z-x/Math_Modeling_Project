@@ -347,7 +347,7 @@ $$
 最值得保留的服务质量对照方案为：
 
 ```powershell
-python problems/experiments/problem2_parameter_sweep.py --iterations 40 --remove-counts 16 --seeds 20260427 --variants default_split --use-policy-operators --use-ev-reservation --ev-reservation-penalties 500 --output-dir outputs/problem2_experiments/formal_screen_policy_ev_p500
+python problems/experiments/problem2_parameter_sweep.py --iterations 40 --remove-counts 16 --seeds 20260427 --variants default_split --use-policy-operators --use-ev-reservation --ev-reservation-penalty 500 --output-dir outputs/problem2_experiments/formal_screen_policy_ev_p500
 ```
 
 该方案结果为：总成本 `50770.72`，政策冲突 `0`，迟到点 `2`，最大迟到 `5.93 min`。它不满足最低官方总成本目标，但可在论文中作为“服务质量优先倾向的灵敏度方案”说明成本和准时性之间的权衡。
@@ -522,7 +522,7 @@ python problems/problem2.py --iterations 40 --remove-count 16 --seed 20260427 --
 服务质量对照：
 
 ```powershell
-python problems/experiments/problem2_parameter_sweep.py --iterations 40 --remove-counts 16 --seeds 20260427 --variants default_split --use-policy-operators --use-ev-reservation --ev-reservation-penalties 500 --output-dir outputs/problem2_experiments/formal_screen_policy_ev_p500
+python problems/experiments/problem2_parameter_sweep.py --iterations 40 --remove-counts 16 --seeds 20260427 --variants default_split --use-policy-operators --use-ev-reservation --ev-reservation-penalty 500 --output-dir outputs/problem2_experiments/formal_screen_policy_ev_p500
 ```
 
 回归测试：

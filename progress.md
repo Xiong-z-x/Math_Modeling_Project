@@ -549,3 +549,23 @@ to Problem 2 green-zone restrictions.
   `findings.md`, and `项目文件导航.md` so future work treats Problem 2 as closed
   for this modeling round and starts Problem 3 from the existing Problem 2
   interfaces.
+
+## 2026-04-26 Problem 3 Subdialogue 4 Handoff Preparation
+- Rechecked the repository after the Problem 2 closeout commit: `main` was
+  synchronized with `origin/main`, and the generated-output layout contained
+  only formal Problem 1/2 outputs, documented Problem 2 backup/experiment
+  folders, and prior first-question audit folders.
+- Re-read the current README, output ledger, `task_plan.md`, `progress.md`,
+  and the third-question section of `解题总思路.md`.
+- Fixed a reproducibility typo in
+  `docs/results/problem2_modeling_and_solution_closeout.md`: the parameter
+  sweep flag is `--ev-reservation-penalty`, not
+  `--ev-reservation-penalties`.
+- Added `docs/design/problem3_subdialogue4_initialization_prompt.md`. It gives
+  the next sub-dialogue a compact project report, required reading order,
+  modeling red lines, recommended dynamic-response implementation route,
+  validation checklist, and a ready-to-copy initialization prompt.
+- Updated `README.md`, `task_plan.md`, and `项目文件导航.md` to point future
+  work to the new Problem 3 handoff and to preserve the rule that Problem 3
+  outputs must go under `outputs/problem3/`, not overwrite Problem 1 or
+  Problem 2 formal results.
