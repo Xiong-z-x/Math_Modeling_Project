@@ -11,6 +11,7 @@ import pandas as pd
 from .constants import DAY_START_MIN, VEHICLE_TYPES
 from .data_processing.loader import ProblemData
 from .initial_solution import RouteSpec
+from .policies import GreenZonePolicyEvaluator
 from .scheduler import preferred_departure_min
 from .solution import Route, Solution, evaluate_route
 from .travel_time import calculate_arrival_time
@@ -111,14 +112,15 @@ def diagnose_problem2_policy_conflicts(problem: ProblemData, solution: Solution)
     """Identify stops that would violate the Problem 2 green-zone policy."""
 
     node_lookup = _node_lookup(problem)
+    policy = GreenZonePolicyEvaluator()
     rows: list[dict[str, Any]] = []
     for route_index, route in enumerate(solution.routes, start=1):
         is_fuel = route.vehicle_type.energy_type == "fuel"
         for stop in route.stops:
             node = node_lookup[int(stop.service_node_id)]
             is_green = bool(node.get("is_green_zone", False))
-            in_restricted_window = DAY_START_MIN <= stop.arrival_min <= 16 * 60
-            would_violate = bool(is_fuel and is_green and in_restricted_window)
+            in_restricted_window = policy.start_min <= stop.arrival_min < policy.end_min
+            would_violate = policy.stop_violation(problem, stop, route.vehicle_type_id)
             rows.append(
                 {
                     "route_index": route_index,

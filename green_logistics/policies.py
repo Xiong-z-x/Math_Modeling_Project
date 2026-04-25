@@ -6,9 +6,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
-from .constants import DAY_START_MIN
+from .constants import DAY_START_MIN, VEHICLE_TYPES
 from .data_processing.loader import ProblemData
-from .solution import Route, StopRecord
+from .solution import Route, Solution, StopRecord
+
+
+_GREEN_NODE_CACHE: dict[int, set[int]] = {}
 
 
 class PolicyEvaluator(Protocol):
@@ -22,6 +25,12 @@ class PolicyEvaluator(Protocol):
 
     def stop_penalty(self, problem: ProblemData, stop: StopRecord, vehicle_type_id: str) -> float:
         """Return a policy penalty for a stop and vehicle type."""
+
+    def solution_penalty(self, problem: ProblemData, solution: Solution) -> float:
+        """Return a policy penalty for a whole solution."""
+
+    def solution_violation_count(self, problem: ProblemData, solution: Solution) -> int:
+        """Return the number of hard policy violations in a solution."""
 
 
 @dataclass(frozen=True)
@@ -37,6 +46,12 @@ class NoPolicyEvaluator:
     def stop_penalty(self, _problem: ProblemData, _stop: StopRecord, _vehicle_type_id: str) -> float:
         return 0.0
 
+    def solution_penalty(self, _problem: ProblemData, _solution: Solution) -> float:
+        return 0.0
+
+    def solution_violation_count(self, _problem: ProblemData, _solution: Solution) -> int:
+        return 0
+
 
 @dataclass(frozen=True)
 class GreenZonePolicyEvaluator:
@@ -47,20 +62,51 @@ class GreenZonePolicyEvaluator:
     violation_penalty: float = 1_000_000.0
 
     def route_penalty(self, problem: ProblemData, route: Route) -> float:
-        return sum(
-            self.stop_penalty(problem, stop, route.vehicle_type_id)
-            for stop in route.stops
-        )
+        return self.route_violation_count(problem, route) * self.violation_penalty
 
     def is_route_allowed(self, problem: ProblemData, route: Route) -> bool:
-        return self.route_penalty(problem, route) <= 1e-9
+        return self.route_violation_count(problem, route) == 0
+
+    def stop_violation(self, problem: ProblemData, stop: StopRecord, vehicle_type_id: str) -> bool:
+        vehicle = VEHICLE_TYPES[vehicle_type_id]
+        if vehicle.energy_type != "fuel":
+            return False
+        if int(stop.service_node_id) not in _green_node_ids(problem):
+            return False
+        return self.start_min <= float(stop.arrival_min) < self.end_min
 
     def stop_penalty(self, problem: ProblemData, stop: StopRecord, vehicle_type_id: str) -> float:
-        if not vehicle_type_id.startswith("F"):
-            return 0.0
-        node = problem.service_nodes.set_index("node_id").loc[int(stop.service_node_id)]
-        if not bool(node["is_green_zone"]):
-            return 0.0
-        if self.start_min <= stop.arrival_min <= self.end_min:
-            return self.violation_penalty
-        return 0.0
+        return self.violation_penalty if self.stop_violation(problem, stop, vehicle_type_id) else 0.0
+
+    def violating_stops(self, problem: ProblemData, route: Route) -> tuple[StopRecord, ...]:
+        if route.vehicle_type.energy_type != "fuel":
+            return ()
+        green_nodes = _green_node_ids(problem)
+        return tuple(
+            stop for stop in route.stops
+            if int(stop.service_node_id) in green_nodes
+            and self.start_min <= float(stop.arrival_min) < self.end_min
+        )
+
+    def route_violation_count(self, problem: ProblemData, route: Route) -> int:
+        return len(self.violating_stops(problem, route))
+
+    def solution_penalty(self, problem: ProblemData, solution: Solution) -> float:
+        return sum(self.route_penalty(problem, route) for route in solution.routes)
+
+    def solution_violation_count(self, problem: ProblemData, solution: Solution) -> int:
+        return sum(self.route_violation_count(problem, route) for route in solution.routes)
+
+
+def _green_node_ids(problem: ProblemData) -> set[int]:
+    cache_key = id(problem.service_nodes)
+    cached = _GREEN_NODE_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    green = set(
+        problem.service_nodes.loc[
+            problem.service_nodes["is_green_zone"], "node_id"
+        ].astype(int).tolist()
+    )
+    _GREEN_NODE_CACHE[cache_key] = green
+    return green

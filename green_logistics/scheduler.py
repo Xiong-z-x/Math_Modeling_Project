@@ -10,8 +10,12 @@ from typing import Iterable, Mapping, Protocol, Sequence
 from .constants import DAY_START_MIN, FIXED_COST_PER_VEHICLE, VEHICLE_TYPES
 from .data_processing.loader import ProblemData
 from .metrics import SearchScoreWeights, route_quality_score
+from .policies import NoPolicyEvaluator, PolicyEvaluator
 from .solution import Route, Solution, evaluate_route, evaluate_solution
 from .travel_time import calculate_arrival_time
+
+
+_SERVICE_NODE_LOOKUP_CACHE: dict[int, dict[int, dict[str, object]]] = {}
 
 
 @dataclass(frozen=True)
@@ -30,6 +34,7 @@ class SchedulingConfig:
     prefer_on_time: bool = True
     optimize_departure_grid_min: int | None = None
     max_departure_delay_min: float = 180.0
+    policy_evaluator: PolicyEvaluator = field(default_factory=NoPolicyEvaluator)
 
 
 def schedule_route_specs(
@@ -88,7 +93,7 @@ def schedule_route_specs(
                     physical_vehicle_id=str(vehicle["vehicle_id"]),
                     trip_id=f"T{spec_index:04d}",
                 )
-                candidate_score = scheduling_selection_score(candidate, cfg)
+                candidate_score = scheduling_selection_score(problem, candidate, cfg)
                 if candidate_score < best_score:
                     best_route = candidate
                     best_vehicle = vehicle
@@ -115,7 +120,7 @@ def schedule_route_specs(
                     physical_vehicle_id=vehicle_id,
                     trip_id=f"T{spec_index:04d}",
                 )
-                candidate_score = scheduling_selection_score(candidate, cfg)
+                candidate_score = scheduling_selection_score(problem, candidate, cfg)
                 if candidate_score < best_score:
                     best_route = candidate
                     best_vehicle = {"vehicle_id": vehicle_id, "available_min": DAY_START_MIN}
@@ -146,25 +151,63 @@ def choose_departure_min(
     """Choose a departure time for a spec and vehicle candidate."""
 
     base_departure = preferred_departure_min(problem, spec, available_min=available_min)
+    candidates = {float(available_min), base_departure}
+    safe_departure = policy_safe_departure_min(
+        problem,
+        spec,
+        vehicle_type_id,
+        available_min=available_min,
+        fixed_cost=fixed_cost,
+        config=config,
+    )
+    if safe_departure is not None:
+        candidates.add(safe_departure)
+
     grid = config.optimize_departure_grid_min
     if grid is None or grid <= 0:
-        return base_departure
+        return _best_departure_from_candidates(
+            problem,
+            spec,
+            vehicle_type_id,
+            candidates,
+            fixed_cost=fixed_cost,
+            config=config,
+        )
 
     _, tight_latest, _ = spec_time_key(problem, spec)
     upper = min(float(available_min) + config.max_departure_delay_min, tight_latest)
     if upper < available_min:
         upper = float(available_min)
 
-    candidates = {float(available_min), base_departure}
     step = float(grid)
     current = float(available_min)
     while current <= upper + 1e-9:
         candidates.add(current)
         current += step
 
-    best_departure = base_departure
+    return _best_departure_from_candidates(
+        problem,
+        spec,
+        vehicle_type_id,
+        candidates,
+        fixed_cost=fixed_cost,
+        config=config,
+    )
+
+
+def _best_departure_from_candidates(
+    problem: ProblemData,
+    spec: RouteSpecLike,
+    vehicle_type_id: str,
+    candidates: Iterable[float],
+    *,
+    fixed_cost: float,
+    config: SchedulingConfig,
+) -> float:
+    ordered_candidates = sorted(float(candidate) for candidate in candidates)
+    best_departure = ordered_candidates[0]
     best_score = inf
-    for depart_min in sorted(candidates):
+    for depart_min in ordered_candidates:
         route = evaluate_route(
             problem,
             vehicle_type_id,
@@ -172,11 +215,80 @@ def choose_departure_min(
             depart_min=depart_min,
             fixed_cost=fixed_cost,
         )
-        score = scheduling_selection_score(route, config)
+        score = scheduling_selection_score(problem, route, config)
         if score < best_score:
             best_departure = depart_min
             best_score = score
     return best_departure
+
+
+def policy_safe_departure_min(
+    problem: ProblemData,
+    spec: RouteSpecLike,
+    vehicle_type_id: str,
+    *,
+    available_min: float,
+    fixed_cost: float,
+    config: SchedulingConfig,
+) -> float | None:
+    """Find a delayed departure that makes the route policy-feasible, if needed."""
+
+    base_departure = preferred_departure_min(problem, spec, available_min=available_min)
+    if not _spec_may_have_policy_conflict(problem, spec, vehicle_type_id, config):
+        return base_departure
+
+    route = evaluate_route(
+        problem,
+        vehicle_type_id,
+        spec.service_node_ids,
+        depart_min=base_departure,
+        fixed_cost=fixed_cost,
+    )
+    if config.policy_evaluator.is_route_allowed(problem, route):
+        return base_departure
+
+    max_departure = max(base_departure, float(available_min)) + config.max_departure_delay_min
+    low = base_departure
+    high = base_departure
+    while high <= max_departure + 1e-9:
+        high += 30.0
+        route = evaluate_route(
+            problem,
+            vehicle_type_id,
+            spec.service_node_ids,
+            depart_min=high,
+            fixed_cost=fixed_cost,
+        )
+        if config.policy_evaluator.is_route_allowed(problem, route):
+            for _ in range(30):
+                mid = (low + high) / 2.0
+                mid_route = evaluate_route(
+                    problem,
+                    vehicle_type_id,
+                    spec.service_node_ids,
+                    depart_min=mid,
+                    fixed_cost=fixed_cost,
+                )
+                if config.policy_evaluator.is_route_allowed(problem, mid_route):
+                    high = mid
+                else:
+                    low = mid
+            return high
+    return None
+
+
+def _spec_may_have_policy_conflict(
+    problem: ProblemData,
+    spec: RouteSpecLike,
+    vehicle_type_id: str,
+    config: SchedulingConfig,
+) -> bool:
+    if isinstance(config.policy_evaluator, NoPolicyEvaluator):
+        return False
+    if VEHICLE_TYPES[vehicle_type_id].energy_type != "fuel":
+        return False
+    lookup = service_node_lookup(problem)
+    return any(bool(lookup[int(node_id)]["is_green_zone"]) for node_id in spec.service_node_ids)
 
 
 def preferred_departure_min(problem: ProblemData, spec: RouteSpecLike, *, available_min: float) -> float:
@@ -206,13 +318,14 @@ def preferred_departure_min(problem: ProblemData, spec: RouteSpecLike, *, availa
     return high
 
 
-def scheduling_selection_score(route: Route, config: SchedulingConfig) -> float:
+def scheduling_selection_score(problem: ProblemData, route: Route, config: SchedulingConfig) -> float:
     """Score one route candidate for physical scheduling."""
 
     if config.forbid_midnight and route.return_min >= 24 * 60:
         return inf
 
     score = route_quality_score(route, config.score_weights)
+    score += config.policy_evaluator.route_penalty(problem, route)
     if config.scenario_return_limit_min is not None and route.return_min > config.scenario_return_limit_min:
         score += config.midnight_penalty + (route.return_min - config.scenario_return_limit_min)
     return score
@@ -257,13 +370,18 @@ def spec_time_key(problem: ProblemData, spec: RouteSpecLike) -> tuple[float, flo
 def service_node_lookup(problem: ProblemData) -> dict[int, dict[str, object]]:
     """Return service-node records keyed by virtual service-node ID."""
 
-    return {
+    cache_key = id(problem.service_nodes)
+    cached = _SERVICE_NODE_LOOKUP_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    lookup = {
         int(row["node_id"]): row
         for row in problem.service_nodes.to_dict(orient="records")
     }
+    _SERVICE_NODE_LOOKUP_CACHE[cache_key] = lookup
+    return lookup
 class RouteSpecLike(Protocol):
     """Minimal trip-spec interface consumed by the scheduler."""
 
     vehicle_type_id: str
     service_node_ids: tuple[int, ...]
-

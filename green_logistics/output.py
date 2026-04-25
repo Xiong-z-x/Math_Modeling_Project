@@ -115,6 +115,38 @@ def write_solution_outputs(
     return written
 
 
+def write_problem2_comparison_outputs(rows: list[dict[str, object]], output_dir: str | Path) -> dict[str, Path]:
+    """Write variant comparison artifacts for Problem 2."""
+
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    comparison = pd.DataFrame(rows)
+    comparison_path = output_path / "variant_comparison.csv"
+    comparison.to_csv(comparison_path, index=False, encoding="utf-8-sig")
+
+    feasible = comparison[
+        (comparison["policy_conflict_count"] == 0)
+        & (comparison["is_complete"] == True)  # noqa: E712
+        & (comparison["is_capacity_feasible"] == True)  # noqa: E712
+    ]
+    recommended = feasible.sort_values("total_cost").iloc[0].to_dict() if not feasible.empty else {}
+    summary_lines = [
+        "# Problem 2 Green-Zone Policy Summary",
+        "",
+        f"- Candidate variants: `{len(comparison)}`",
+        f"- Feasible variants: `{len(feasible)}`",
+        f"- Recommended variant: `{recommended.get('variant', 'none')}`",
+        f"- Recommended total cost: `{recommended.get('total_cost', '')}`",
+        "",
+    ]
+    summary_path = output_path / "policy_effect_summary.md"
+    summary_path.write_text("\n".join(summary_lines), encoding="utf-8")
+    return {
+        "variant_comparison_csv": comparison_path,
+        "policy_effect_summary_md": summary_path,
+    }
+
+
 def _route_row(route_index: int, route: Route) -> dict[str, object]:
     return {
         "route_index": route_index,

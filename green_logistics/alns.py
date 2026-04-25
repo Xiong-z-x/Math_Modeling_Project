@@ -12,6 +12,7 @@ from .data_processing.loader import ProblemData
 from .initial_solution import RouteSpec, construct_initial_route_specs
 from .metrics import SearchScoreWeights, score_solution, solution_quality_metrics
 from .operators import DESTROY_OPERATORS, REPAIR_OPERATORS
+from .policies import NoPolicyEvaluator, PolicyEvaluator
 from .scheduler import SchedulingConfig, schedule_route_specs
 from .scheduler_local_search import rescue_late_routes
 from .solution import Solution
@@ -29,6 +30,7 @@ class ALNSConfig:
     score_weights: SearchScoreWeights = field(default_factory=SearchScoreWeights)
     scheduling_config: SchedulingConfig | None = None
     postprocess_late_routes: bool = True
+    policy_evaluator: PolicyEvaluator = field(default_factory=NoPolicyEvaluator)
 
 
 @dataclass(frozen=True)
@@ -70,11 +72,14 @@ def run_alns(
     """Run a short ALNS optimization from an initial route-spec solution."""
 
     cfg = config or ALNSConfig()
-    schedule_cfg = cfg.scheduling_config or SchedulingConfig(score_weights=cfg.score_weights)
+    schedule_cfg = cfg.scheduling_config or SchedulingConfig(
+        score_weights=cfg.score_weights,
+        policy_evaluator=cfg.policy_evaluator,
+    )
     rng = Random(cfg.seed)
     initial_spec_tuple = tuple(initial_specs or construct_initial_route_specs(problem))
     initial_solution = schedule_route_specs(problem, initial_spec_tuple, config=schedule_cfg)
-    initial_score = score_solution(initial_solution, cfg.score_weights)
+    initial_score = _candidate_search_score(problem, initial_solution, cfg)
     initial_quality = solution_quality_metrics(initial_solution)
 
     current_specs = initial_spec_tuple
@@ -114,7 +119,7 @@ def run_alns(
         partial_specs, removed = destroy(problem, current_specs, current_solution, rng, cfg.remove_count)
         candidate_specs = repair(problem, partial_specs, removed)
         candidate_solution = schedule_route_specs(problem, candidate_specs, config=schedule_cfg)
-        candidate_score = score_solution(candidate_solution, cfg.score_weights)
+        candidate_score = _candidate_search_score(problem, candidate_solution, cfg)
         candidate_quality = solution_quality_metrics(candidate_solution)
 
         accepted = _accept_candidate(
@@ -128,7 +133,12 @@ def run_alns(
             current_solution = candidate_solution
             current_score = candidate_score
 
-        if _is_better_formal_solution(candidate_solution, best_solution):
+        if _is_better_formal_solution(
+            candidate_solution,
+            best_solution,
+            problem=problem,
+            policy_evaluator=cfg.policy_evaluator,
+        ):
             best_specs = candidate_specs
             best_solution = candidate_solution
             best_score = candidate_score
@@ -159,8 +169,13 @@ def run_alns(
             best_solution,
             config=schedule_cfg,
         )
-        rescued_score = score_solution(rescued_solution, cfg.score_weights)
-        if _is_better_formal_solution(rescued_solution, best_solution):
+        rescued_score = _candidate_search_score(problem, rescued_solution, cfg)
+        if _is_better_formal_solution(
+            rescued_solution,
+            best_solution,
+            problem=problem,
+            policy_evaluator=cfg.policy_evaluator,
+        ):
             best_specs = rescued_specs
             best_solution = rescued_solution
             best_score = rescued_score
@@ -183,13 +198,30 @@ def _accept_candidate(current_cost: float, candidate_cost: float, temperature: f
     return rng.random() < probability
 
 
-def _is_better_formal_solution(candidate: Solution, incumbent: Solution) -> bool:
-    """Return whether candidate is better for the official Problem 1 objective."""
+def _candidate_search_score(problem: ProblemData, solution: Solution, cfg: ALNSConfig) -> float:
+    return score_solution(solution, cfg.score_weights) + cfg.policy_evaluator.solution_penalty(problem, solution)
+
+
+def _is_better_formal_solution(
+    candidate: Solution,
+    incumbent: Solution,
+    *,
+    problem: ProblemData | None = None,
+    policy_evaluator: PolicyEvaluator | None = None,
+) -> bool:
+    """Return whether candidate is better for the official objective and policy gate."""
 
     if not candidate.is_complete or not candidate.is_capacity_feasible:
         return False
     if not incumbent.is_complete or not incumbent.is_capacity_feasible:
         return True
+    if problem is not None and policy_evaluator is not None:
+        candidate_policy_ok = policy_evaluator.solution_violation_count(problem, candidate) == 0
+        incumbent_policy_ok = policy_evaluator.solution_violation_count(problem, incumbent) == 0
+        if not candidate_policy_ok:
+            return False
+        if not incumbent_policy_ok:
+            return True
     if candidate.total_cost < incumbent.total_cost - 1e-9:
         return True
     if abs(candidate.total_cost - incumbent.total_cost) <= 1e-9:

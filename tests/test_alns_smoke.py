@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from random import Random
 
+from dataclasses import replace
+
 from green_logistics.alns import ALNSConfig, _is_better_formal_solution, run_alns
 from green_logistics.data_processing import load_problem_data
 from green_logistics.initial_solution import RouteSpec, construct_initial_route_specs, schedule_route_specs
@@ -19,6 +21,7 @@ from green_logistics.operators import (
     regret2_insert,
     time_oriented_insert,
 )
+from green_logistics.policies import GreenZonePolicyEvaluator
 from green_logistics.solution import evaluate_route, evaluate_solution
 from tests.test_solution import _small_problem_data
 
@@ -105,3 +108,30 @@ def test_formal_best_selection_prioritizes_official_total_cost() -> None:
     assert cheaper_solution.total_cost < expensive_solution.total_cost
     assert _is_better_formal_solution(cheaper_solution, expensive_solution)
     assert not _is_better_formal_solution(expensive_solution, cheaper_solution)
+
+
+def test_problem2_best_selection_rejects_lower_cost_policy_violation() -> None:
+    problem = load_problem_data(".")
+    green_node_id = int(
+        problem.service_nodes[
+            problem.service_nodes["is_green_zone"] & (problem.service_nodes["latest_min"] < 960)
+        ].iloc[0]["node_id"]
+    )
+    policy = GreenZonePolicyEvaluator()
+
+    illegal_route = evaluate_route(problem, "F1", (green_node_id,), depart_min=480.0, fixed_cost=0.0)
+    illegal_solution = evaluate_solution((illegal_route,), required_node_ids=[green_node_id])
+    legal_route = evaluate_route(problem, "E1", (green_node_id,), depart_min=480.0, fixed_cost=400.0)
+    legal_solution = evaluate_solution((legal_route,), required_node_ids=[green_node_id])
+
+    cheap_illegal = replace(illegal_solution, total_cost=1.0)
+    expensive_legal = replace(legal_solution, total_cost=9999.0)
+
+    assert policy.solution_violation_count(problem, cheap_illegal) > 0
+    assert policy.solution_violation_count(problem, expensive_legal) == 0
+    assert not _is_better_formal_solution(
+        cheap_illegal,
+        expensive_legal,
+        problem=problem,
+        policy_evaluator=policy,
+    )

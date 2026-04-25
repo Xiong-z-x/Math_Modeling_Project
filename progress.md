@@ -324,3 +324,54 @@ to Problem 2 green-zone restrictions.
 - Ran `pytest -q`: 42 tests passed in 44.54 s.
 - Ran `git diff --check`: no whitespace errors; Git only reported LF-to-CRLF
   working-copy warnings.
+
+## 2026-04-25 Problem 2 Reference Synthesis
+- Loaded the requested skills again for this turn: Superpowers brainstorming,
+  find-skills, self-improvement, and the file-planning workflow. The
+  brainstorming scope was limited to route design and documentation, not code
+  implementation.
+- Read the three new Problem 2 reference files:
+  `第二问参考思路/claude第二问参考思路：问题二完整方案.md`,
+  `第二问参考思路/gemini第二问参考思路：Problem2_Improvement_Plan.md`, and
+  `第二问参考思路/gpt第二问参考思路：deep-research-report.md`.
+- Searched the skills ecosystem for vehicle-routing/math-modeling support with
+  `npx skills find "vehicle routing mathematical modeling ALNS"`. Results were
+  low-install supply-chain skills, so no new skill was installed.
+- Rechecked the current data facts before deciding: green-zone demand has 19
+  virtual nodes, only 4 fit E2 under the current split, and a hypothetical E2
+  green split would increase green nodes to exactly 37 and total service nodes
+  to 166. The follow-up decision promotes this idea from optional scenario to
+  a formal `GREEN_E2_ADAPTIVE` Problem 2 candidate mainline, while preserving
+  default `load_problem_data` for Problem 1 reproducibility.
+- Performed external method checks for ALNS, time-dependent VRP, pollution
+  routing, multi-trip TDVRPTW, and solver baselines. These support keeping ALNS
+  as the main implementation route while using policy-specific destroy/repair
+  and scheduler retiming rather than jumping straight to exact branch-price.
+- Added `docs/design/problem2_green_zone_policy_roadmap.md` with the combined
+  assessment and final implementation priorities.
+- Updated `task_plan.md`, `findings.md`, and `项目文件导航.md` to record the
+  Problem 2 route design and reference-material audit.
+- No solver code was modified and no Problem 2 optimization run was started in
+  this synthesis turn.
+
+## 2026-04-25 Problem 2 Engine Planning
+- Continued after the quota interruption by re-reading the current working
+  tree status, route roadmap, task plan, findings, progress log, navigation
+  ledger, and learning notes.
+- Confirmed the user-approved route: Problem 2 should be solved by an
+  independent `Problem2Engine`, not by hard-wiring policy logic into
+  `problems/problem1.py`.
+- Updated `docs/design/problem2_green_zone_policy_roadmap.md` so
+  `GREEN_E2_ADAPTIVE` is explicitly a formal candidate mainline. Its data
+  effect is now recorded as green service nodes `19 -> 37` and total service
+  nodes `148 -> 166`.
+- Added `docs/superpowers/plans/2026-04-25-problem2-engine-green-e2-adaptive.md`
+  as the implementation plan. The planned priority is:
+  data variant layer, hard policy evaluator, policy-aware scheduler/ALNS gate,
+  `Problem2Engine` runner, comparison outputs, then policy-specific operators
+  and scenario experiments.
+- Updated `README.md`, `task_plan.md`, `findings.md`, `项目文件导航.md`, and
+  `.learnings/LEARNINGS.md` to remove the old wording that treated green E2
+  splitting only as an optional scenario.
+- Still no solver code was modified and no Problem 2 optimization run was
+  started in this planning turn.

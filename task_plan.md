@@ -6,7 +6,10 @@ decisions, and next actions so future windows can resume without rereading all
 materials.
 
 ## Goal
-Build an executable and explainable Python solution for Problem 1 of the Huazhong Cup green logistics scheduling task, while keeping the design extensible for green-zone restrictions and dynamic rescheduling.
+Build executable and explainable Python solutions for the Huazhong Cup green
+logistics scheduling task. Problem 1 is complete; the current next goal is a
+policy-feasible Problem 2 solver with an independent `Problem2Engine` and
+formal comparison between `DEFAULT_SPLIT` and `GREEN_E2_ADAPTIVE`.
 
 ## Current Scope
 This session is responsible for:
@@ -31,6 +34,8 @@ This session is responsible for:
 | 10. Service-quality optimization | complete | Metrics, search score, true-lateness operators, and improved Problem 1 result |
 | 11. Problem 1 round-2 C-lite optimization | complete | Scheduler extraction, diagnostics, cost-primary best selection, and Problem 2 preparation hooks |
 | 12. Problem 1 closeout documentation | complete | Paper-style summary in `docs/results/problem1_static_scheduling_summary.md` and output ledger in `outputs/README.md` |
+| 13. Problem 2 route design | complete | Audited three Problem 2 reference plans and recorded the implementation roadmap in `docs/design/problem2_green_zone_policy_roadmap.md` |
+| 14. Problem 2 implementation planning | complete | Promoted `GREEN_E2_ADAPTIVE` to a formal candidate mainline and wrote `docs/superpowers/plans/2026-04-25-problem2-engine-green-e2-adaptive.md` |
 
 ## Key Decisions So Far
 - The local original-problem PDF appears to be a Baidu share printout, not the problem statement body. Treat coefficients from reference files as provisional unless also supported by accessible problem material.
@@ -76,6 +81,10 @@ This session is responsible for:
 - `green_logistics/diagnostics.py`: late-stop, green-zone capacity, and Problem
   2 policy-conflict diagnostics.
 - `green_logistics/policies.py`: policy evaluator interfaces for Problem 1/2.
+- `green_logistics/problem_variants.py`: planned explicit data-variant layer
+  for `DEFAULT_SPLIT` and `GREEN_E2_ADAPTIVE`.
+- `green_logistics/problem2_engine.py`: planned independent Problem 2
+  orchestrator, not folded into the Problem 1 runner.
 - `green_logistics/scheduler_local_search.py`: residual late-route rescue by
   targeted retyping/splitting.
 - `green_logistics/alns.py` and `green_logistics/operators.py`: adaptive search.
@@ -162,5 +171,13 @@ Problem 1 closeout:
 - Output folder ledger: `outputs/README.md`.
 - Paper-ready modeling and result summary:
   `docs/results/problem1_static_scheduling_summary.md`.
-- Next work should start from Problem 2 policy constraints, not by changing the
-  Problem 1 formal objective away from total delivery cost.
+- Problem 2 route design:
+  `docs/design/problem2_green_zone_policy_roadmap.md`.
+- Problem 2 implementation plan:
+  `docs/superpowers/plans/2026-04-25-problem2-engine-green-e2-adaptive.md`.
+- Next implementation should start from the independent `Problem2Engine`
+  plan. The official Problem 2 objective remains total delivery cost with soft
+  time-window penalties, while the green-zone fuel restriction is a hard
+  feasibility gate. `GREEN_E2_ADAPTIVE` is now a formal candidate mainline, not
+  a side scenario; it must be implemented through an explicit variant layer so
+  Problem 1 remains reproducible.

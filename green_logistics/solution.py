@@ -12,6 +12,9 @@ from .cost import calculate_arc_energy_cost, calculate_time_window_penalty
 from .data_processing.loader import ProblemData
 
 
+_SERVICE_NODE_RECORDS_CACHE: dict[int, dict[int, dict[str, object]]] = {}
+
+
 @dataclass(frozen=True)
 class ArcRecord:
     """One traveled arc in a route/trip evaluation."""
@@ -322,14 +325,27 @@ def _resolve_vehicle_type(vehicle_type: VehicleType | str) -> VehicleType:
 
 
 def _service_node_records(problem: ProblemData, node_ids: Sequence[int]) -> list[dict[str, object]]:
-    service_nodes = problem.service_nodes.set_index("node_id", drop=False)
+    records_by_id = _service_node_record_lookup(problem)
     records: list[dict[str, object]] = []
-    missing = [node_id for node_id in node_ids if node_id not in service_nodes.index]
+    missing = [node_id for node_id in node_ids if node_id not in records_by_id]
     if missing:
         raise ValueError(f"unknown service node IDs: {missing}")
     for node_id in node_ids:
-        records.append(service_nodes.loc[int(node_id)].to_dict())
+        records.append(records_by_id[int(node_id)])
     return records
+
+
+def _service_node_record_lookup(problem: ProblemData) -> dict[int, dict[str, object]]:
+    cache_key = id(problem.service_nodes)
+    cached = _SERVICE_NODE_RECORDS_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    lookup = {
+        int(row["node_id"]): row
+        for row in problem.service_nodes.to_dict(orient="records")
+    }
+    _SERVICE_NODE_RECORDS_CACHE[cache_key] = lookup
+    return lookup
 
 
 def _distance_km(problem: ProblemData, from_customer_id: int, to_customer_id: int) -> float:

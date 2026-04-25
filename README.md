@@ -18,6 +18,11 @@ Problem A, "City Green Logistics Scheduling".
 - `docs/results/problem1_static_scheduling_summary.md`: paper-oriented
   closeout summary for Problem 1, including model formulas, assumptions,
   results, diagnostics, and visualization notes.
+- `docs/design/problem2_green_zone_policy_roadmap.md`: integrated Problem 2
+  route design after auditing the three new green-zone policy reference plans.
+- `docs/superpowers/plans/2026-04-25-problem2-engine-green-e2-adaptive.md`:
+  implementation plan for the independent Problem 2 engine and the
+  `GREEN_E2_ADAPTIVE` formal candidate mainline.
 - `outputs/README.md`: generated-output ledger. It marks `outputs/problem1/`
   as the formal Problem 1 result and separates audit/experiment folders.
 - `.learnings/`: local self-improvement notes for tool errors and reusable
@@ -102,3 +107,12 @@ The solver still reports service-quality diagnostics, but the formal Problem 1
 answer is selected by official total delivery cost. Soft time windows mean a
 small number of late stops can be optimal after their penalties are included in
 the objective.
+
+Problem 2 route design is now recorded in
+`docs/design/problem2_green_zone_policy_roadmap.md`. The approved direction is
+to keep the official total-cost objective, treat the green-zone fuel restriction
+as a hard feasibility gate, and build an independent `Problem2Engine` rather
+than folding Problem 2 into `problems/problem1.py`. The formal candidate set is
+now `DEFAULT_SPLIT` plus `GREEN_E2_ADAPTIVE`; the latter keeps non-green
+service nodes unchanged but splits green customers by E2 capacity so small EVs
+can participate in restricted-period green-zone delivery.

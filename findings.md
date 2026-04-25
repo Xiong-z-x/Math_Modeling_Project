@@ -93,6 +93,37 @@ solver code.
   `4` green nodes fit E2; `15` need E1-class capacity. The first-question
   solution has fuel-vehicle green-zone service conflicts during 08:00-16:00,
   so Problem 2 must actively reassign or retime those stops.
+- The three new Problem 2 reference files in `第二问参考思路/` were audited on
+  2026-04-25. The strongest combined route is an independent `Problem2Engine`
+  on the current C-lite architecture: hard policy gate, green-zone conflict
+  removal, EV-first repair, scheduler-level retime/reassign, and formal
+  comparison between `DEFAULT_SPLIT` and `GREEN_E2_ADAPTIVE`. A full
+  trip-pool/two-stage rewrite remains a later quality upgrade if the
+  Problem2Engine route cannot reach a good cost.
+- Gemini's suggestion to split green-zone customers by E2 capacity is a real
+  insight and has been promoted to a formal Problem 2 candidate mainline:
+  with the current 3000 kg split, only `4` of `19` green service nodes fit E2;
+  if green customers are split by E2 capacity, green service nodes increase to
+  exactly `37` and total service nodes increase from `148` to `166`. This
+  changes the service-node set, so it must be implemented through an explicit
+  `GREEN_E2_ADAPTIVE` variant rather than by changing default
+  `load_problem_data`. For fair interpretation, compare it with both the
+  default-split Problem 2 candidate and an optional no-policy adaptive baseline.
+- For Problem 2, policy violation should not be added to the official objective
+  as a fifth cost component. The official objective remains fixed + energy +
+  carbon + soft time-window penalty; green-zone fuel restriction is a hard
+  feasibility condition. A large policy penalty may be used only inside
+  heuristic search scores to steer candidates away from infeasible regions.
+- Boundary convention selected for implementation: treat the restricted window
+  as `[480, 960)`, so a fuel vehicle arriving at a green-zone customer exactly
+  at `16:00` is considered outside the restriction. Exact-boundary cases are
+  rare but should be fixed in tests.
+- Under the same service-node set and exact optimization, adding the Problem 2
+  green-zone hard constraint cannot improve the true optimum relative to
+  Problem 1. However, the current solver is heuristic; if a future Problem 2 run
+  finds a lower total cost than the current Problem 1 baseline, treat it first
+  as evidence that the heuristic found a different/better feasible region, not
+  as proof that the policy itself reduces cost.
 
 ## Tooling Notes
 - PowerShell inline Python can corrupt Chinese path literals. Prefer filesystem enumeration (`Path.glob`) or explicit UTF-8 handling.

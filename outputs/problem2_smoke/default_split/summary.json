@@ -1,0 +1,37 @@
+{
+  "route_count": 117,
+  "is_complete": true,
+  "is_capacity_feasible": true,
+  "missing_node_ids": [],
+  "duplicate_node_ids": [],
+  "vehicle_trip_usage_by_type": {
+    "E1": 38,
+    "F1": 79
+  },
+  "vehicle_physical_usage_by_type": {
+    "E1": 10,
+    "F1": 39
+  },
+  "total_distance_km": 14269.00621610093,
+  "carbon_kg": 8847.49564705113,
+  "quality_metrics": {
+    "late_stop_count": 28,
+    "total_late_min": 1801.94856380681,
+    "max_late_min": 168.1058102026077,
+    "wait_stop_count": 4,
+    "total_wait_min": 811.3813438597379,
+    "max_wait_min": 401.26158149635603,
+    "return_after_17_count": 73,
+    "return_after_midnight_count": 1,
+    "max_return_min": 1512.7521656971385,
+    "max_trips_per_physical_vehicle": 5,
+    "mean_trips_per_physical_vehicle": 2.3877551020408165
+  },
+  "cost_breakdown": {
+    "fixed_cost": 19600.0,
+    "energy_cost": 26627.873195471228,
+    "carbon_cost": 5750.872170583234,
+    "penalty_cost": 1772.0842511255878,
+    "total_cost": 53750.82961718005
+  }
+}

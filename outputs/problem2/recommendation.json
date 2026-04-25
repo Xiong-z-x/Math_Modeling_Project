@@ -1,0 +1,36 @@
+{
+  "recommended_variant": "default_split",
+  "total_cost": 51720.04340896468,
+  "policy_conflict_count": 0,
+  "is_complete": true,
+  "is_capacity_feasible": true,
+  "service_node_count": 148,
+  "green_service_node_count": 19,
+  "cost_breakdown": {
+    "fixed_cost": 18800.0,
+    "energy_cost": 25609.647240591512,
+    "carbon_cost": 5523.370431066767,
+    "penalty_cost": 1787.025737306403,
+    "total_cost": 51720.04340896468
+  },
+  "quality_metrics": {
+    "late_stop_count": 26,
+    "total_late_min": 1821.1195324332175,
+    "max_late_min": 147.74846632346407,
+    "wait_stop_count": 6,
+    "total_wait_min": 808.2783808361651,
+    "max_wait_min": 252.6408203270762,
+    "return_after_17_count": 71,
+    "return_after_midnight_count": 0,
+    "max_return_min": 1427.6268303408574,
+    "max_trips_per_physical_vehicle": 5,
+    "mean_trips_per_physical_vehicle": 2.5106382978723403
+  },
+  "vehicle_physical_usage_by_type": {
+    "E1": 10,
+    "E2": 2,
+    "F1": 35
+  },
+  "variant_comparison_csv": "outputs\\problem2\\variant_comparison.csv",
+  "policy_effect_summary_md": "outputs\\problem2\\policy_effect_summary.md"
+}
