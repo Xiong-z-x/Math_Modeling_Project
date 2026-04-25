@@ -300,3 +300,27 @@ to Problem 2 green-zone restrictions.
 - Final closeout verification: `pytest -q` passed 42 tests in 78.75 s.
 - Final `git diff --check` reported no whitespace errors; only LF-to-CRLF
   working-copy warnings were shown.
+
+## 2026-04-25 Problem 1 Closeout Documentation
+- Searched the available skill ecosystem for math-modeling or academic-writing
+  report skills with `npx skills find "math modeling report academic writing"`.
+  The results were low-install academic-writing skills, so no new skill was
+  installed; the closeout was written directly from verified project facts.
+- Added `docs/results/problem1_static_scheduling_summary.md` as the
+  paper-oriented first-question summary. It records the modeling objective,
+  assumptions, notation, cost formulas, constraints, ALNS/C-lite algorithm,
+  final metrics, residual-lateness diagnosis, visualization plan, and Problem 2
+  handoff notes.
+- Added `outputs/README.md` to mark `outputs/problem1/` as the formal Problem 1
+  result and to separate backup/convergence/smoke output folders from the paper
+  main result.
+- Updated `README.md`, `task_plan.md`, and `项目文件导航.md` so future sessions can
+  find the Problem 1 closeout and avoid confusing audit outputs with the formal
+  answer.
+- Verified the formal output after closeout documentation: `outputs/problem1/`
+  still reports complete `True`, capacity feasible `True`, 116 trips, total
+  cost `48644.68`, 4 late stops, 148 stop rows, 148 unique service nodes, and
+  12 Problem 2 policy-conflict precheck rows.
+- Ran `pytest -q`: 42 tests passed in 44.54 s.
+- Ran `git diff --check`: no whitespace errors; Git only reported LF-to-CRLF
+  working-copy warnings.

@@ -15,6 +15,11 @@ Problem A, "City Green Logistics Scheduling".
   supplement, data files, and reference solutions.
 - `progress.md`: session log. It records what has been done and what should
   happen next.
+- `docs/results/problem1_static_scheduling_summary.md`: paper-oriented
+  closeout summary for Problem 1, including model formulas, assumptions,
+  results, diagnostics, and visualization notes.
+- `outputs/README.md`: generated-output ledger. It marks `outputs/problem1/`
+  as the formal Problem 1 result and separates audit/experiment folders.
 - `.learnings/`: local self-improvement notes for tool errors and reusable
   lessons. These are ignored by git and are not solver input data.
 - `green_logistics/`: Python package for the solver implementation.
@@ -87,6 +92,11 @@ Latest Problem 1 cost-primary run (`2026-04-25`, 40 ALNS iterations):
 total cost `48644.68`, fixed cost `17200.00`, time-window penalty `933.53`,
 116 trips, physical vehicles `{'E1': 10, 'F1': 33}`, late stops `4`, maximum
 lateness `31.60` min, and cross-midnight returns `0`.
+
+Problem 1 closeout documentation is in
+`docs/results/problem1_static_scheduling_summary.md`. The formal generated
+answer remains `outputs/problem1/`; other output folders are audit or
+experiment records as described in `outputs/README.md`.
 
 The solver still reports service-quality diagnostics, but the formal Problem 1
 answer is selected by official total delivery cost. Soft time windows mean a

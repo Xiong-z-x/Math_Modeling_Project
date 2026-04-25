@@ -30,6 +30,7 @@ This session is responsible for:
 | 9. Optimization implementation | complete | Problem 1 route evaluator, initial solution, ALNS, outputs, and runner implemented |
 | 10. Service-quality optimization | complete | Metrics, search score, true-lateness operators, and improved Problem 1 result |
 | 11. Problem 1 round-2 C-lite optimization | complete | Scheduler extraction, diagnostics, cost-primary best selection, and Problem 2 preparation hooks |
+| 12. Problem 1 closeout documentation | complete | Paper-style summary in `docs/results/problem1_static_scheduling_summary.md` and output ledger in `outputs/README.md` |
 
 ## Key Decisions So Far
 - The local original-problem PDF appears to be a Baidu share printout, not the problem statement body. Treat coefficients from reference files as provisional unless also supported by accessible problem material.
@@ -155,3 +156,11 @@ Potential next architecture step:
   scheduler owns all physical-vehicle neighborhoods, is cleaner long term but
   should be justified by Problem 2/3 needs rather than by current Problem 1
   service quality alone.
+
+Problem 1 closeout:
+- Formal output folder: `outputs/problem1/`.
+- Output folder ledger: `outputs/README.md`.
+- Paper-ready modeling and result summary:
+  `docs/results/problem1_static_scheduling_summary.md`.
+- Next work should start from Problem 2 policy constraints, not by changing the
+  Problem 1 formal objective away from total delivery cost.
