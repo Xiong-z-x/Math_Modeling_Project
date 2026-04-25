@@ -8,12 +8,18 @@ from random import Random
 from green_logistics.alns import ALNSConfig, run_alns
 from green_logistics.data_processing import load_problem_data
 from green_logistics.initial_solution import RouteSpec, construct_initial_route_specs, schedule_route_specs
+from green_logistics.metrics import score_solution
 from green_logistics.operators import (
+    actual_late_remove,
     greedy_insert,
+    late_route_split,
+    late_suffix_remove,
+    midnight_route_remove,
     random_remove,
     regret2_insert,
     time_oriented_insert,
 )
+from green_logistics.solution import evaluate_route, evaluate_solution
 from tests.test_solution import _small_problem_data
 
 
@@ -32,6 +38,42 @@ def test_remove_and_insert_operators_preserve_service_node_set() -> None:
         assert served == [10, 20]
 
 
+def test_true_lateness_destroy_operators_use_current_scheduled_solution() -> None:
+    problem = _small_problem_data()
+    specs = (
+        RouteSpec("F1", (10,)),
+        RouteSpec("F1", (20,)),
+    )
+    on_time = evaluate_route(problem, "F1", [10], depart_min=480.0)
+    late = evaluate_route(problem, "F1", [20], depart_min=650.0)
+    solution = evaluate_solution([on_time, late])
+
+    partial_specs, removed = actual_late_remove(problem, specs, solution, Random(3), remove_count=1)
+
+    assert removed == (20,)
+    served = sorted(node_id for spec in partial_specs for node_id in spec.service_node_ids)
+    assert served == [10]
+
+
+def test_late_suffix_midnight_and_split_operators_target_bad_routes() -> None:
+    problem = _small_problem_data()
+    specs = (RouteSpec("F1", (10, 20)),)
+    late_route = evaluate_route(problem, "F1", [10, 20], depart_min=650.0)
+    midnight_route = evaluate_route(problem, "F1", [10], depart_min=1430.0)
+    late_solution = evaluate_solution([late_route])
+    midnight_solution = evaluate_solution([midnight_route])
+
+    _partial, suffix_removed = late_suffix_remove(problem, specs, late_solution, Random(5), remove_count=2)
+    assert suffix_removed == (10, 20)
+
+    _partial, midnight_removed = midnight_route_remove(problem, specs, midnight_solution, Random(5), remove_count=2)
+    assert midnight_removed == (10,)
+
+    split_specs, split_removed = late_route_split(problem, specs, late_solution, Random(5), remove_count=2)
+    assert split_removed == ()
+    assert [spec.service_node_ids for spec in split_specs] == [(10,), (20,)]
+
+
 def test_short_alns_run_on_real_data_keeps_solution_feasible_and_no_worse() -> None:
     problem = load_problem_data(".")
     initial_specs = construct_initial_route_specs(problem)
@@ -46,5 +88,8 @@ def test_short_alns_run_on_real_data_keeps_solution_feasible_and_no_worse() -> N
     assert result.initial_solution.total_cost == initial_solution.total_cost
     assert result.best_solution.is_complete
     assert result.best_solution.is_capacity_feasible
-    assert result.best_solution.total_cost <= initial_solution.total_cost
+    assert score_solution(result.best_solution) <= score_solution(initial_solution)
     assert len(result.history) == 9
+    assert result.history[0].current_score == score_solution(initial_solution)
+    assert result.history[-1].candidate_late_stop_count >= 0
+    assert result.history[-1].candidate_max_late_min >= 0.0

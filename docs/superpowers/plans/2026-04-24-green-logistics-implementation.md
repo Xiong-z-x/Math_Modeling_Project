@@ -61,8 +61,10 @@ it when creating, moving, deleting, or renaming project files.
 ## Execution Summary
 - Problem 1 solver implemented through `problems/problem1.py`, with tables and
   figures generated under `outputs/problem1/`.
-- Latest recorded 40-iteration run: total cost `51870.90`, 115 trips, 10 E1
-  and 27 F1 physical vehicles, complete service coverage, and capacity feasible.
-- Remaining modeling caveat: the current heuristic still accepts nontrivial soft
-  time-window lateness, which should be explained or further optimized in the
-  paper-stage analysis.
+- Latest service-quality 40-iteration run: total cost `48644.68`, 116 trips,
+  10 E1 and 33 F1 physical vehicles, complete service coverage, capacity
+  feasible, 4 late stops, max lateness `31.60` min, and no cross-midnight
+  returns.
+- Modeling caveat: the official soft time-window cost is unchanged, but ALNS now
+  uses a separate service-quality search score to avoid the earlier
+  cost-priority solution's systematic lateness.

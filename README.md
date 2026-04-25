@@ -49,10 +49,14 @@ The implemented foundation now includes:
    adjustment, carbon cost, and soft time-window penalties.
 4. `green_logistics/solution.py`: route/trip evaluation, capacity checks,
    customer-ID distance lookup, and solution coverage checks.
-5. `green_logistics/initial_solution.py`, `green_logistics/operators.py`, and
-   `green_logistics/alns.py`: feasible construction and a compact ALNS search.
-6. `green_logistics/output.py` and `problems/problem1.py`: Problem 1 CSV/JSON
-   exports and paper-ready plots under `outputs/problem1/`.
+5. `green_logistics/metrics.py`: service-quality diagnostics and search-score
+   helpers for late stops, maximum lateness, and cross-midnight returns.
+6. `green_logistics/initial_solution.py`, `green_logistics/operators.py`, and
+   `green_logistics/alns.py`: feasible construction, service-quality-aware
+   scheduling, true-lateness ALNS operators, and search-score-guided ALNS.
+7. `green_logistics/output.py` and `problems/problem1.py`: Problem 1 CSV/JSON
+   exports, service-quality summaries, and paper-ready plots under
+   `outputs/problem1/`.
 
 Use the data layer through:
 
@@ -71,3 +75,8 @@ python problems/problem1.py --iterations 40 --remove-count 8 --seed 20260424 --o
 Implementation note: `Route` means one depot-to-depot trip. Trips are assigned
 sequentially to physical vehicles, and fleet limits are checked against physical
 vehicle counts.
+
+Latest Problem 1 service-quality run (`2026-04-25`, 40 ALNS iterations):
+total cost `48644.68`, fixed cost `17200.00`, time-window penalty `933.53`,
+116 trips, physical vehicles `{'E1': 10, 'F1': 33}`, late stops `4`, maximum
+lateness `31.60` min, and cross-midnight returns `0`.

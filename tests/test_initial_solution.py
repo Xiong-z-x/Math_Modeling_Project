@@ -3,11 +3,14 @@
 
 from __future__ import annotations
 
+import pandas as pd
 import pytest
 
 from green_logistics.constants import FIXED_COST_PER_VEHICLE, VEHICLE_TYPES
 from green_logistics.data_processing import load_problem_data
+from green_logistics.data_processing.loader import ProblemData
 from green_logistics.initial_solution import RouteSpec, construct_initial_solution, schedule_route_specs
+from green_logistics.metrics import solution_quality_metrics
 from tests.test_solution import _small_problem_data
 
 
@@ -49,6 +52,66 @@ def test_schedule_route_specs_can_choose_lower_cost_ev_when_available() -> None:
 
     assert solution.routes[0].vehicle_type_id == "E1"
     assert solution.vehicle_physical_usage_by_type == {"E1": 1}
+
+
+def test_schedule_route_specs_prefers_new_vehicle_to_avoid_late_stop() -> None:
+    service_nodes = pd.DataFrame(
+        [
+            {
+                "node_id": 10,
+                "customer_id": 1,
+                "split_index": 1,
+                "split_count": 1,
+                "demand_weight": 500.0,
+                "demand_volume": 2.0,
+                "earliest_min": 480.0,
+                "latest_min": 1000.0,
+                "is_green_zone": False,
+            },
+            {
+                "node_id": 20,
+                "customer_id": 2,
+                "split_index": 1,
+                "split_count": 1,
+                "demand_weight": 500.0,
+                "demand_volume": 2.0,
+                "earliest_min": 600.0,
+                "latest_min": 630.0,
+                "is_green_zone": False,
+            },
+        ]
+    )
+    distance_matrix = pd.DataFrame(
+        [
+            [0.0, 39.2, 9.8],
+            [39.2, 0.0, 9.8],
+            [9.8, 9.8, 0.0],
+        ],
+        index=[0, 1, 2],
+        columns=[0, 1, 2],
+    )
+    problem = ProblemData(
+        orders=pd.DataFrame(),
+        coordinates=pd.DataFrame(),
+        distance_matrix=distance_matrix,
+        time_windows=pd.DataFrame(),
+        customer_demands=pd.DataFrame(),
+        service_nodes=service_nodes,
+        node_to_customer={10: 1, 20: 2},
+        no_order_customer_ids=[],
+        green_customer_ids=[],
+        active_green_customer_ids=[],
+    )
+    specs = (
+        RouteSpec("F1", (10,)),
+        RouteSpec("F1", (20,)),
+    )
+
+    solution = schedule_route_specs(problem, specs, vehicle_counts={"F1": 2})
+
+    assert solution.vehicle_physical_usage_by_type == {"F1": 2}
+    assert solution.fixed_cost == pytest.approx(2 * FIXED_COST_PER_VEHICLE)
+    assert solution_quality_metrics(solution).late_stop_count == 0
 
 
 def test_construct_initial_solution_on_real_data_is_complete_and_capacity_feasible() -> None:

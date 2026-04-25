@@ -2,13 +2,22 @@
 
 ## Cost
 
-- Initial total cost: `55322.71`
-- Best total cost: `51870.90`
-- Improvement: `3451.80`
-- Fixed cost: `14800.00`
-- Energy cost: `23017.23`
-- Carbon cost: `4953.10`
-- Time-window penalty: `9100.58`
+- Initial total cost: `52245.49`
+- Best total cost: `48644.68`
+- Improvement: `3600.81`
+- Fixed cost: `17200.00`
+- Energy cost: `25091.79`
+- Carbon cost: `5419.37`
+- Time-window penalty: `933.53`
+
+## Service Quality
+
+- Late stops: `4`
+- Total late minutes: `77.42`
+- Max late minutes: `31.60`
+- Routes returning after midnight: `0`
+- Max return minute: `1428.52`
+- Max trips per physical vehicle: `5`
 
 ## Feasibility
 
@@ -19,11 +28,11 @@
 
 ## Operations
 
-- Depot-to-depot trips: `115`
-- Physical vehicle usage: `{'E1': 10, 'F1': 27}`
-- Trip usage by type: `{'E1': 39, 'F1': 76}`
-- Total distance km: `13342.28`
-- Carbon kg: `7620.15`
+- Depot-to-depot trips: `116`
+- Physical vehicle usage: `{'E1': 10, 'F1': 33}`
+- Trip usage by type: `{'E1': 32, 'F1': 84}`
+- Total distance km: `13384.29`
+- Carbon kg: `8337.49`
 
 ## Modeling Note
 
@@ -34,6 +43,7 @@ Routes in the code are depot-to-depot trips. Trips are assigned to physical vehi
 - `alns_history_csv`: `outputs\problem1\alns_history.csv`
 - `cost_breakdown_png`: `outputs\problem1\cost_breakdown.png`
 - `cost_summary_csv`: `outputs\problem1\cost_summary.csv`
+- `quality_summary_csv`: `outputs\problem1\quality_summary.csv`
 - `route_map_png`: `outputs\problem1\route_map.png`
 - `route_summary_csv`: `outputs\problem1\route_summary.csv`
 - `stop_schedule_csv`: `outputs\problem1\stop_schedule.csv`

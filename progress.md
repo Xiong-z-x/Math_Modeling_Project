@@ -147,8 +147,53 @@ verification commands, and the next safe step.
   feasible `True`, 116 trips, physical vehicle usage `{'E1': 10, 'F1': 32}`.
   Removed the temporary smoke output directory afterward; the formal
   40-iteration result remains in `outputs/problem1/`.
+- Compared Codex, Gemini, GPT, and final synthesis diagnostics for the Problem 1
+  lateness issue. Adopted the service-quality semi-decoupled route: official
+  cost remains unchanged, while ALNS and physical scheduling use a separate
+  search score for late stops, max lateness, total lateness, and cross-midnight
+  returns.
+- Added `docs/superpowers/specs/2026-04-25-problem1-service-quality-design.md`
+  and `docs/superpowers/plans/2026-04-25-problem1-service-quality-optimization.md`.
+- Added `green_logistics/metrics.py`, `tests/test_metrics.py`, output quality
+  summaries, search-score-guided ALNS, service-quality physical scheduling, and
+  true-lateness destroy/split operators.
+- Verified focused tests with `pytest tests/test_metrics.py tests/test_output.py
+  tests/test_initial_solution.py tests/test_alns_smoke.py -v`: 12 tests passed.
+- Ran trial Problem 1 with `python problems/problem1.py --iterations 40
+  --remove-count 8 --seed 20260424 --output-dir outputs/problem1_quality_trial`:
+  total cost `51365.03`, late stops `18`, max lateness `68.41` min, and
+  cross-midnight returns `0`. Removed the temporary trial output after copying
+  the result pattern into the formal run.
+- Regenerated formal Problem 1 outputs with `python problems/problem1.py
+  --iterations 40 --remove-count 8 --seed 20260424 --output-dir
+  outputs/problem1`: total cost `51365.03`, fixed `18400.00`, energy
+  `26239.10`, carbon `5670.68`, time-window penalty `1055.24`, total distance
+  `13765.16 km`, carbon `8724.13 kg`, 117 trips, physical vehicle usage
+  `{'E1': 10, 'F1': 36}`, complete `True`, capacity feasible `True`, late stops
+  `18`, max lateness `68.41` min, and cross-midnight returns `0`.
+- Ran full regression with `pytest -v`: 31 tests passed in 33.88 s.
+- After the final documentation updates, ran fresh verification with
+  `pytest -q`: 31 tests passed in 34.51 s. Ran `git diff --check`: no
+  whitespace errors; Git only reported LF-to-CRLF working-copy warnings.
+- Rechecked whether the service-quality optimization was fully done. The
+  18-late-stop result met the first gate but missed the stretch target, so the
+  default search-score weights were strengthened from `300/5` to `500/8` for
+  late-stop and max-lateness terms. Added a regression test proving the default
+  route score prefers an expensive on-time route over a large-lateness cheap
+  route.
+- Regenerated formal Problem 1 outputs with `python problems/problem1.py
+  --iterations 40 --remove-count 8 --seed 20260424 --output-dir
+  outputs/problem1`: total cost `48644.68`, fixed `17200.00`, energy
+  `25091.79`, carbon `5419.37`, time-window penalty `933.53`, total distance
+  `13384.29 km`, carbon `8337.49 kg`, 116 trips, physical vehicle usage
+  `{'E1': 10, 'F1': 33}`, complete `True`, capacity feasible `True`, late stops
+  `4`, max lateness `31.60` min, and cross-midnight returns `0`.
+- Ran full regression after the final optimization and documentation pass with
+  `pytest -q`: 32 tests passed in 34.04 s. Ran `git diff --check`: no
+  whitespace errors; Git only reported LF-to-CRLF working-copy warnings.
 
 ## Next Step
-Either strengthen Problem 1 optimization with longer ALNS / stricter service-day
-assumptions / stronger route reordering, or move to Problem 2 green-zone
-restrictions using the current Problem 1 solver as the baseline.
+Problem 1 service-quality optimization now exceeds the stretch target. Next,
+run final verification after documentation updates, then move to Problem 2
+green-zone restrictions unless a stricter no-lateness scenario is explicitly
+requested.

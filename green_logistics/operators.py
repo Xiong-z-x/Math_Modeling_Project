@@ -9,10 +9,13 @@ from typing import Callable, Sequence
 from .constants import DAY_START_MIN, VEHICLE_TYPES
 from .data_processing.loader import ProblemData
 from .initial_solution import RouteSpec
-from .solution import evaluate_route
+from .solution import Solution, evaluate_route
 
 
-DestroyOperator = Callable[[ProblemData, Sequence[RouteSpec], Random, int], tuple[tuple[RouteSpec, ...], tuple[int, ...]]]
+DestroyOperator = Callable[
+    [ProblemData, Sequence[RouteSpec], Solution, Random, int],
+    tuple[tuple[RouteSpec, ...], tuple[int, ...]],
+]
 RepairOperator = Callable[[ProblemData, Sequence[RouteSpec], Sequence[int]], tuple[RouteSpec, ...]]
 
 
@@ -32,6 +35,7 @@ def random_remove(
 def random_remove_operator(
     _problem: ProblemData,
     specs: Sequence[RouteSpec],
+    _solution: Solution,
     rng: Random,
     remove_count: int,
 ) -> tuple[tuple[RouteSpec, ...], tuple[int, ...]]:
@@ -41,6 +45,7 @@ def random_remove_operator(
 def worst_cost_remove(
     problem: ProblemData,
     specs: Sequence[RouteSpec],
+    _solution: Solution,
     _rng: Random,
     remove_count: int,
 ) -> tuple[tuple[RouteSpec, ...], tuple[int, ...]]:
@@ -62,6 +67,7 @@ def worst_cost_remove(
 def related_remove(
     problem: ProblemData,
     specs: Sequence[RouteSpec],
+    _solution: Solution,
     rng: Random,
     remove_count: int,
 ) -> tuple[tuple[RouteSpec, ...], tuple[int, ...]]:
@@ -91,6 +97,7 @@ def related_remove(
 def time_penalty_remove(
     problem: ProblemData,
     specs: Sequence[RouteSpec],
+    _solution: Solution,
     _rng: Random,
     remove_count: int,
 ) -> tuple[tuple[RouteSpec, ...], tuple[int, ...]]:
@@ -103,6 +110,130 @@ def time_penalty_remove(
             penalties.append((stop.penalty_cost, stop.service_node_id))
     selected = tuple(node_id for _score, node_id in sorted(penalties, reverse=True)[:remove_count])
     return _remove_nodes(specs, selected), selected
+
+
+def actual_late_remove(
+    problem: ProblemData,
+    specs: Sequence[RouteSpec],
+    solution: Solution,
+    rng: Random,
+    remove_count: int,
+) -> tuple[tuple[RouteSpec, ...], tuple[int, ...]]:
+    """Remove service nodes that are actually late after physical scheduling."""
+
+    late_stops: list[tuple[float, int]] = []
+    for route in solution.routes:
+        for stop in route.stops:
+            if stop.late_min > 1e-9:
+                late_stops.append((float(stop.late_min), int(stop.service_node_id)))
+    if not late_stops:
+        return random_remove_operator(problem, specs, solution, rng, remove_count)
+
+    selected = tuple(
+        node_id
+        for _late_min, node_id in sorted(late_stops, reverse=True)[:remove_count]
+    )
+    return _remove_nodes(specs, selected), selected
+
+
+def late_suffix_remove(
+    problem: ProblemData,
+    specs: Sequence[RouteSpec],
+    solution: Solution,
+    rng: Random,
+    remove_count: int,
+) -> tuple[tuple[RouteSpec, ...], tuple[int, ...]]:
+    """Remove the suffix beginning at the first late stop on the worst route."""
+
+    routes_with_late = [
+        route for route in solution.routes if any(stop.late_min > 1e-9 for stop in route.stops)
+    ]
+    if not routes_with_late:
+        return random_remove_operator(problem, specs, solution, rng, remove_count)
+
+    target = max(
+        routes_with_late,
+        key=lambda route: max((stop.late_min for stop in route.stops), default=0.0),
+    )
+    suffix_nodes: list[int] = []
+    found_late = False
+    for stop in target.stops:
+        if stop.late_min > 1e-9:
+            found_late = True
+        if found_late:
+            suffix_nodes.append(int(stop.service_node_id))
+    selected = tuple(suffix_nodes[:remove_count])
+    return _remove_nodes(specs, selected), selected
+
+
+def midnight_route_remove(
+    problem: ProblemData,
+    specs: Sequence[RouteSpec],
+    solution: Solution,
+    rng: Random,
+    remove_count: int,
+) -> tuple[tuple[RouteSpec, ...], tuple[int, ...]]:
+    """Remove nodes from the route that returns latest after midnight."""
+
+    midnight_routes = [route for route in solution.routes if route.return_min >= 24 * 60]
+    if not midnight_routes:
+        return random_remove_operator(problem, specs, solution, rng, remove_count)
+
+    target = max(midnight_routes, key=lambda route: route.return_min)
+    selected = tuple(int(node_id) for node_id in target.service_node_ids[:remove_count])
+    return _remove_nodes(specs, selected), selected
+
+
+def late_route_split(
+    problem: ProblemData,
+    specs: Sequence[RouteSpec],
+    solution: Solution,
+    rng: Random,
+    remove_count: int,
+) -> tuple[tuple[RouteSpec, ...], tuple[int, ...]]:
+    """Split the worst late multi-stop route into two independent trip specs."""
+
+    splittable = [
+        route
+        for route in solution.routes
+        if len(route.service_node_ids) > 1
+        and any(stop.late_min > 1e-9 for stop in route.stops)
+    ]
+    if not splittable:
+        return random_remove_operator(problem, specs, solution, rng, remove_count)
+
+    target = max(
+        splittable,
+        key=lambda route: max((stop.late_min for stop in route.stops), default=0.0),
+    )
+    nodes = target.service_node_ids
+    split_pos: int | None = None
+    for index, stop in enumerate(target.stops):
+        if stop.late_min > 1e-9:
+            split_pos = index
+            break
+    if split_pos is None or split_pos <= 0:
+        split_pos = max(1, len(nodes) // 2)
+    if split_pos >= len(nodes):
+        split_pos = len(nodes) - 1
+
+    prefix = nodes[:split_pos]
+    suffix = nodes[split_pos:]
+    replacement = [
+        spec for spec in (_retyped_spec(problem, prefix), _retyped_spec(problem, suffix)) if spec is not None
+    ]
+
+    result: list[RouteSpec] = []
+    replaced = False
+    for spec in specs:
+        if not replaced and spec.service_node_ids == nodes:
+            result.extend(replacement)
+            replaced = True
+        else:
+            result.append(spec)
+    if not replaced:
+        return random_remove_operator(problem, specs, solution, rng, remove_count)
+    return tuple(result), ()
 
 
 def greedy_insert(
@@ -162,6 +293,10 @@ DESTROY_OPERATORS: dict[str, DestroyOperator] = {
     "worst_cost_remove": worst_cost_remove,
     "related_remove": related_remove,
     "time_penalty_remove": time_penalty_remove,
+    "actual_late_remove": actual_late_remove,
+    "late_suffix_remove": late_suffix_remove,
+    "midnight_route_remove": midnight_route_remove,
+    "late_route_split": late_route_split,
 }
 
 REPAIR_OPERATORS: dict[str, RepairOperator] = {

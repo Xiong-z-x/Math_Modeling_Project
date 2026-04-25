@@ -28,6 +28,7 @@ This session is responsible for:
 | 7. Main technical blueprint | complete | `解题总思路.md` |
 | 8. Project file navigation | complete | `项目文件导航.md` |
 | 9. Optimization implementation | complete | Problem 1 route evaluator, initial solution, ALNS, outputs, and runner implemented |
+| 10. Service-quality optimization | complete | Metrics, search score, true-lateness operators, and improved Problem 1 result |
 
 ## Key Decisions So Far
 - The local original-problem PDF appears to be a Baidu share printout, not the problem statement body. Treat coefficients from reference files as provisional unless also supported by accessible problem material.
@@ -63,6 +64,8 @@ This session is responsible for:
 - `green_logistics/travel_time.py`: time-dependent ETA by segment integration.
 - `green_logistics/cost.py`: expected energy, carbon, fixed, and time-window costs.
 - `green_logistics/solution.py`: route and solution dataclasses.
+- `green_logistics/metrics.py`: service-quality metrics and search-score
+  helpers.
 - `green_logistics/initial_solution.py`: feasible construction heuristic.
 - `green_logistics/alns.py` and `green_logistics/operators.py`: adaptive search.
 - `green_logistics/output.py`: structured result export for papers.
@@ -74,6 +77,18 @@ This session is responsible for:
 | `green_logistics/travel_time.py` | complete | `pytest tests/test_travel_time.py -v` |
 | `green_logistics/cost.py` | complete | `pytest tests/test_cost.py -v` |
 | `green_logistics/solution.py` | complete | `pytest tests/test_solution.py -v` |
+| `green_logistics/metrics.py` | complete | `pytest tests/test_metrics.py -v` |
 | `green_logistics/initial_solution.py` | complete | `pytest tests/test_initial_solution.py -v` |
 | `green_logistics/operators.py` / `green_logistics/alns.py` | complete | `pytest tests/test_alns_smoke.py -v` |
 | `green_logistics/output.py` / `problems/problem1.py` | complete | `pytest tests/test_output.py -v`; real run in `outputs/problem1/` |
+
+Latest Problem 1 service-quality result:
+
+- Command: `python problems/problem1.py --iterations 40 --remove-count 8 --seed 20260424 --output-dir outputs/problem1`
+- Total cost: `48644.68`
+- Time-window penalty: `933.53`
+- Trips: `116`
+- Physical vehicle usage: `{'E1': 10, 'F1': 33}`
+- Late stops: `4`
+- Max lateness: `31.60 min`
+- Cross-midnight returns: `0`

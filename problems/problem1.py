@@ -15,6 +15,7 @@ if __package__ is None or __package__ == "":
 from green_logistics.alns import ALNSConfig, run_alns
 from green_logistics.data_processing import load_problem_data
 from green_logistics.initial_solution import construct_initial_route_specs, schedule_route_specs
+from green_logistics.metrics import solution_quality_metrics
 from green_logistics.output import write_solution_outputs
 
 
@@ -47,8 +48,14 @@ def main(argv: list[str] | None = None) -> int:
             {
                 "iteration": item.iteration,
                 "current_cost": item.current_cost,
+                "current_score": item.current_score,
                 "best_cost": item.best_cost,
+                "best_score": item.best_score,
                 "candidate_cost": item.candidate_cost,
+                "candidate_score": item.candidate_score,
+                "candidate_late_stop_count": item.candidate_late_stop_count,
+                "candidate_max_late_min": item.candidate_max_late_min,
+                "candidate_return_after_midnight_count": item.candidate_return_after_midnight_count,
                 "accepted": item.accepted,
                 "destroy_operator": item.destroy_operator,
                 "repair_operator": item.repair_operator,
@@ -79,6 +86,7 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
 
 def _console_summary(initial_solution, solution, output_dir: Path) -> str:
     improvement = initial_solution.total_cost - solution.total_cost
+    quality = solution_quality_metrics(solution)
     return "\n".join(
         [
             "Problem 1 completed",
@@ -86,6 +94,9 @@ def _console_summary(initial_solution, solution, output_dir: Path) -> str:
             f"initial_cost={initial_solution.total_cost:.2f}",
             f"best_cost={solution.total_cost:.2f}",
             f"improvement={improvement:.2f}",
+            f"late_stop_count={quality.late_stop_count}",
+            f"max_late_min={quality.max_late_min:.2f}",
+            f"return_after_midnight_count={quality.return_after_midnight_count}",
             f"trips={len(solution.routes)}",
             f"physical_vehicle_usage={solution.vehicle_physical_usage_by_type}",
             f"distance_km={solution.total_distance_km:.2f}",
@@ -98,6 +109,7 @@ def _console_summary(initial_solution, solution, output_dir: Path) -> str:
 
 def _summary_markdown(initial_solution, solution, written: dict[str, Path]) -> str:
     improvement = initial_solution.total_cost - solution.total_cost
+    quality = solution_quality_metrics(solution)
     lines = [
         "# Problem 1 Static Scheduling Summary",
         "",
@@ -110,6 +122,15 @@ def _summary_markdown(initial_solution, solution, written: dict[str, Path]) -> s
         f"- Energy cost: `{solution.energy_cost:.2f}`",
         f"- Carbon cost: `{solution.carbon_cost:.2f}`",
         f"- Time-window penalty: `{solution.penalty_cost:.2f}`",
+        "",
+        "## Service Quality",
+        "",
+        f"- Late stops: `{quality.late_stop_count}`",
+        f"- Total late minutes: `{quality.total_late_min:.2f}`",
+        f"- Max late minutes: `{quality.max_late_min:.2f}`",
+        f"- Routes returning after midnight: `{quality.return_after_midnight_count}`",
+        f"- Max return minute: `{quality.max_return_min:.2f}`",
+        f"- Max trips per physical vehicle: `{quality.max_trips_per_physical_vehicle}`",
         "",
         "## Feasibility",
         "",

@@ -10,6 +10,7 @@ from typing import Mapping
 import pandas as pd
 
 from .data_processing.loader import ProblemData
+from .metrics import solution_quality_metrics
 from .solution import Route, Solution
 
 
@@ -52,11 +53,17 @@ def solution_to_tables(solution: Solution) -> dict[str, pd.DataFrame]:
         {"component": "penalty_cost", "cost": solution.penalty_cost},
         {"component": "total_cost", "cost": solution.total_cost},
     ]
+    quality = solution_quality_metrics(solution)
+    quality_rows = [
+        {"metric": key, "value": value}
+        for key, value in quality.to_dict().items()
+    ]
     return {
         "route_summary": pd.DataFrame(route_rows),
         "stop_schedule": pd.DataFrame(stop_rows),
         "vehicle_usage": pd.DataFrame(vehicle_rows),
         "cost_summary": pd.DataFrame(cost_rows),
+        "quality_summary": pd.DataFrame(quality_rows),
     }
 
 
@@ -89,6 +96,7 @@ def write_solution_outputs(
         "vehicle_physical_usage_by_type": solution.vehicle_physical_usage_by_type,
         "total_distance_km": solution.total_distance_km,
         "carbon_kg": solution.carbon_kg,
+        "quality_metrics": solution_quality_metrics(solution).to_dict(),
         "cost_breakdown": {
             "fixed_cost": solution.fixed_cost,
             "energy_cost": solution.energy_cost,

@@ -9,10 +9,9 @@ from typing import Iterable, Mapping, Sequence
 
 from .constants import DAY_START_MIN, FIXED_COST_PER_VEHICLE, VEHICLE_TYPES
 from .data_processing.loader import ProblemData
+from .metrics import route_quality_score
 from .solution import Route, Solution, evaluate_route, evaluate_solution
 from .travel_time import calculate_arrival_time
-
-LATE_SCHEDULING_PRIORITY = 2.0
 
 
 @dataclass(frozen=True)
@@ -306,5 +305,4 @@ def _preferred_departure_min(problem: ProblemData, spec: RouteSpec, *, available
 
 
 def _scheduling_selection_score(route: Route) -> float:
-    late_minutes = sum(stop.late_min for stop in route.stops)
-    return route.total_cost + late_minutes * LATE_SCHEDULING_PRIORITY
+    return route_quality_score(route)

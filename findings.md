@@ -62,6 +62,13 @@ solver code.
   then assign trips sequentially to physical vehicles of the same type, counting
   unique physical vehicles against fleet limits. This is also consistent with
   the reference specification's "Multi-Trip" framing.
+- The first cost-priority Problem 1 result had systematic lateness: `84` late
+  stops, maximum lateness about `286` minutes, and `8` cross-midnight returns.
+  The 2026-04-25 service-quality optimization keeps the official soft
+  time-window cost unchanged, but uses a separate heuristic search score to
+  guide ALNS and physical scheduling. The latest 40-iteration result has `4`
+  late stops, maximum lateness `31.60` minutes, and `0` cross-midnight returns,
+  while preserving complete coverage and capacity feasibility.
 
 ## Tooling Notes
 - PowerShell inline Python can corrupt Chinese path literals. Prefer filesystem enumeration (`Path.glob`) or explicit UTF-8 handling.
