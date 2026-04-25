@@ -3,4 +3,4 @@
 - Candidate variants: `2`
 - Feasible variants: `2`
 - Recommended variant: `default_split`
-- Recommended total cost: `51720.04340896468`
+- Recommended total cost: `50650.47216670845`

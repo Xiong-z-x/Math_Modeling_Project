@@ -32,6 +32,8 @@ def main(argv: list[str] | None = None) -> int:
         cooling_rate=args.cooling_rate,
         optimize_departure_grid_min=args.optimize_departure_grid_min,
         max_departure_delay_min=args.max_departure_delay_min,
+        use_policy_operators=args.use_policy_operators,
+        scenario_return_limit_min=args.scenario_return_limit_min,
     )
     variants = tuple(
         load_problem_variant(args.data_dir, mode)
@@ -74,6 +76,8 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--cooling-rate", type=float, default=0.995)
     parser.add_argument("--optimize-departure-grid-min", type=int, default=None)
     parser.add_argument("--max-departure-delay-min", type=float, default=720.0)
+    parser.add_argument("--scenario-return-limit-min", type=float, default=None)
+    parser.add_argument("--use-policy-operators", action="store_true", help="Enable experimental Problem 2 destroy/repair operators.")
     return parser.parse_args(argv)
 
 

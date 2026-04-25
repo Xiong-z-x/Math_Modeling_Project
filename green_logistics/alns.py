@@ -18,6 +18,23 @@ from .scheduler_local_search import rescue_late_routes
 from .solution import Solution
 
 
+DEFAULT_DESTROY_OPERATOR_NAMES = (
+    "random_remove",
+    "worst_cost_remove",
+    "related_remove",
+    "time_penalty_remove",
+    "actual_late_remove",
+    "late_suffix_remove",
+    "midnight_route_remove",
+    "late_route_split",
+)
+DEFAULT_REPAIR_OPERATOR_NAMES = (
+    "greedy_insert",
+    "regret2_insert",
+    "time_oriented_insert",
+)
+
+
 @dataclass(frozen=True)
 class ALNSConfig:
     """Runtime configuration for a compact ALNS run."""
@@ -31,6 +48,8 @@ class ALNSConfig:
     scheduling_config: SchedulingConfig | None = None
     postprocess_late_routes: bool = True
     policy_evaluator: PolicyEvaluator = field(default_factory=NoPolicyEvaluator)
+    destroy_operator_names: tuple[str, ...] = DEFAULT_DESTROY_OPERATOR_NAMES
+    repair_operator_names: tuple[str, ...] = DEFAULT_REPAIR_OPERATOR_NAMES
 
 
 @dataclass(frozen=True)
@@ -107,8 +126,8 @@ def run_alns(
         )
     ]
 
-    destroy_names = tuple(DESTROY_OPERATORS)
-    repair_names = tuple(REPAIR_OPERATORS)
+    destroy_names = cfg.destroy_operator_names
+    repair_names = cfg.repair_operator_names
 
     for iteration in range(1, cfg.iterations + 1):
         destroy_name = rng.choice(destroy_names)

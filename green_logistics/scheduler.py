@@ -339,9 +339,12 @@ def candidate_vehicle_type_ids(
     """Return feasible vehicle types for this trip under available counts."""
 
     weight, volume = route_demand(problem, spec.service_node_ids)
+    allowed = set(spec.allowed_vehicle_type_ids) if spec.allowed_vehicle_type_ids is not None else None
     feasible: list[str] = []
     for vehicle_type_id, count in vehicle_counts.items():
         if count <= 0 or vehicle_type_id not in VEHICLE_TYPES:
+            continue
+        if allowed is not None and vehicle_type_id not in allowed:
             continue
         vehicle = VEHICLE_TYPES[vehicle_type_id]
         if weight <= vehicle.max_weight_kg + 1e-9 and volume <= vehicle.max_volume_m3 + 1e-9:

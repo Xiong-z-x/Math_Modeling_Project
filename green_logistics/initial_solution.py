@@ -18,6 +18,8 @@ class RouteSpec:
 
     vehicle_type_id: str
     service_node_ids: tuple[int, ...]
+    allowed_vehicle_type_ids: tuple[str, ...] | None = None
+    policy_service_mode: str = "flexible"
 
 
 def construct_initial_solution(

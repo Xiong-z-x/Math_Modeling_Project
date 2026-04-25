@@ -34,6 +34,17 @@ def test_initial_solution_keeps_legacy_scheduler_import() -> None:
     assert legacy_schedule is schedule_route_specs
 
 
+def test_route_spec_allowed_vehicle_types_are_respected() -> None:
+    problem = _small_problem_data()
+    specs = (
+        RouteSpec("F1", (10,), allowed_vehicle_type_ids=("F1",)),
+    )
+
+    solution = schedule_route_specs(problem, specs, vehicle_counts={"F1": 1, "E1": 1})
+
+    assert solution.routes[0].vehicle_type_id == "F1"
+
+
 def test_policy_scheduler_can_delay_fuel_green_trip_until_restriction_end() -> None:
     problem = load_problem_data(".")
     green_nodes = problem.service_nodes[

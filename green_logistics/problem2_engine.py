@@ -6,7 +6,13 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Sequence
 
-from .alns import ALNSConfig, ALNSResult, run_alns
+from .alns import (
+    ALNSConfig,
+    ALNSResult,
+    DEFAULT_DESTROY_OPERATOR_NAMES,
+    DEFAULT_REPAIR_OPERATOR_NAMES,
+    run_alns,
+)
 from .constants import VEHICLE_TYPES
 from .initial_solution import RouteSpec, construct_initial_route_specs
 from .metrics import solution_quality_metrics
@@ -14,6 +20,27 @@ from .policies import GreenZonePolicyEvaluator
 from .problem_variants import ProblemVariant
 from .scheduler import SchedulingConfig, schedule_route_specs
 from .solution import Solution
+
+
+PROBLEM2_DESTROY_OPERATOR_NAMES = (
+    "random_remove",
+    "worst_cost_remove",
+    "related_remove",
+    "time_penalty_remove",
+    "actual_late_remove",
+    "late_suffix_remove",
+    "midnight_route_remove",
+    "late_route_split",
+    "policy_conflict_remove",
+    "green_fuel_route_split",
+)
+PROBLEM2_REPAIR_OPERATOR_NAMES = (
+    "greedy_insert",
+    "regret2_insert",
+    "time_oriented_insert",
+    "ev_priority_insert",
+    "post_16_fuel_repair",
+)
 
 
 @dataclass(frozen=True)
@@ -44,6 +71,8 @@ class Problem2Engine:
     cooling_rate: float = 0.995
     optimize_departure_grid_min: int | None = None
     max_departure_delay_min: float = 720.0
+    use_policy_operators: bool = False
+    scenario_return_limit_min: float | None = None
 
     def run_variant(self, variant: ProblemVariant) -> Problem2RunResult:
         policy = GreenZonePolicyEvaluator()
@@ -51,8 +80,11 @@ class Problem2Engine:
             policy_evaluator=policy,
             optimize_departure_grid_min=self.optimize_departure_grid_min,
             max_departure_delay_min=self.max_departure_delay_min,
+            scenario_return_limit_min=self.scenario_return_limit_min,
         )
         initial_specs = construct_problem2_initial_route_specs(variant)
+        destroy_names = PROBLEM2_DESTROY_OPERATOR_NAMES if self.use_policy_operators else DEFAULT_DESTROY_OPERATOR_NAMES
+        repair_names = PROBLEM2_REPAIR_OPERATOR_NAMES if self.use_policy_operators else DEFAULT_REPAIR_OPERATOR_NAMES
         initial_solution = schedule_route_specs(variant.data, initial_specs, config=scheduling_config)
         alns_result = run_alns(
             variant.data,
@@ -65,6 +97,8 @@ class Problem2Engine:
                 cooling_rate=self.cooling_rate,
                 scheduling_config=scheduling_config,
                 policy_evaluator=policy,
+                destroy_operator_names=destroy_names,
+                repair_operator_names=repair_names,
             ),
         )
         solution = alns_result.best_solution
@@ -187,5 +221,13 @@ def _pack_green_ev_specs(green_rows: list[dict[str, object]], *, force_e2: bool)
         weight = float(route["weight"])
         volume = float(route["volume"])
         vehicle_type_id = "E2" if weight <= e2.max_weight_kg + 1e-9 and volume <= e2.max_volume_m3 + 1e-9 else "E1"
-        specs.append(RouteSpec(vehicle_type_id, tuple(int(row["node_id"]) for row in rows)))
+        allowed = ("E1", "E2") if vehicle_type_id in {"E1", "E2"} else None
+        specs.append(
+            RouteSpec(
+                vehicle_type_id,
+                tuple(int(row["node_id"]) for row in rows),
+                allowed_vehicle_type_ids=allowed,
+                policy_service_mode="ev_green" if allowed else "flexible",
+            )
+        )
     return tuple(specs)
