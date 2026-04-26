@@ -62,6 +62,7 @@ paper visualization.
 | `outputs/problem2_return1440_trial/` | scenario check | Problem 2 trial with a 24:00 return-limit scenario knob; not part of the official Problem 2 objective |
 | `outputs/problem2_previous_49888_20260425/` | audit backup | Previous formal Problem 2 result before EV-reservation optimization; total cost `49888.84` |
 | `outputs/problem2_experiments/` | experiment ledger | Parameter and operator screening outputs; not formal unless promoted; `formal_screen_policy_ev_p500/` is retained as the service-quality sensitivity case with total cost `50770.72`, 2 late stops, and max late `5.93` min |
+| `outputs/model_validation/` | paper support | Derived all-question validation tables and figures for "模型检验" and "模型优缺点评价"; not a formal Problem 1/2/3 result folder |
 | `outputs/experiments/problem1_convergence_smoke/` | smoke experiment | Small convergence-script output, not a paper result |
 
 These folders should not be cited as the main Problem 1 or Problem 2 answer

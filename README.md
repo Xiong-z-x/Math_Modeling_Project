@@ -30,6 +30,11 @@ Problem A, "City Green Logistics Scheduling".
   paper-writing closeout for Problem 3, including event assumptions, symbols,
   dynamic-state formulas, constraints, algorithm design, scenario results,
   visualization guidance, references, and final writing posture.
+- `docs/results/model_validation_and_evaluation_sections.md`: full
+  paper-writing mother document for final sections "模型检验" and
+  "模型优缺点评价", including feasibility checks, sensitivity analysis,
+  error analysis, old-vs-new comparisons, chart guidance, strengths,
+  weaknesses, and improvement directions.
 - `docs/design/problem3_subdialogue4_initialization_prompt.md`: current
   project-status report and ready-to-copy initialization prompt for the next
   sub-dialogue that will solve Problem 3.
@@ -37,6 +42,10 @@ Problem A, "City Green Logistics Scheduling".
   route after auditing the new Claude/Gemini/GPT reference files. It records
   the final dynamic-event modeling assumptions, physical cargo-state rules,
   module priorities, outputs, and validation plan.
+- `docs/design/model_validation_and_evaluation_initialization_prompt.md`:
+  handoff report and ready-to-copy initialization prompt for the next
+  all-question model validation, sensitivity analysis, and pros/cons
+  evaluation sub-dialogue.
 - `docs/design/problem2_subdialogue3_optimization_handoff.md`: one-page
   handoff report plus a ready-to-use initialization prompt for the next Problem
   2 optimization sub-dialogue.
@@ -46,6 +55,9 @@ Problem A, "City Green Logistics Scheduling".
   it as a comparison baseline and added `GREEN_HOTSPOT_PARTIAL`.
 - `outputs/README.md`: generated-output ledger. It marks `outputs/problem1/`
   as the formal Problem 1 result and separates audit/experiment folders.
+- `outputs/model_validation/`: derived validation tables and figures for the
+  final paper. This directory is not a formal answer folder for any single
+  problem.
 - `.learnings/`: local self-improvement notes for tool errors and reusable
   lessons. These are ignored by git and are not solver input data.
 - `green_logistics/`: Python package for the solver implementation.
@@ -192,3 +204,12 @@ python problems/problem3.py --iterations 8 --remove-count 4 --seed 20260426 --ou
 Problem 3 is now closed for the current modeling round. Future work should move
 to all-question sensitivity analysis or paper assembly unless a clearly scoped,
 bounded Problem 3 extension is requested.
+
+The next-subdialogue handoff for model validation and model evaluation is
+`docs/design/model_validation_and_evaluation_initialization_prompt.md`.
+
+The all-question validation and evaluation paper draft is now in
+`docs/results/model_validation_and_evaluation_sections.md`. Its derived tables
+and figures are in `outputs/model_validation/`; these are paper support
+materials only and do not replace the formal `outputs/problem1/`,
+`outputs/problem2/`, or `outputs/problem3/` results.

@@ -686,3 +686,51 @@ to Problem 2 green-zone restrictions.
   case validation table.
 - No new optimization run was started; all numbers came from the already
   generated scenario output files.
+
+## 2026-04-26 All-Question Validation Handoff
+- Reviewed the current task plan, progress log, findings, output directory
+  layout, and git status after the Problem 3 closeout and case-validation
+  expansion.
+- Confirmed the formal output layout remains separated: `outputs/problem1/`,
+  `outputs/problem2/`, and `outputs/problem3/` are the current formal answer
+  folders; backup, experiment, scenario-check, and smoke outputs are labeled in
+  `outputs/README.md`.
+- Added `docs/design/model_validation_and_evaluation_initialization_prompt.md`
+  as the next-subdialogue handoff. It provides a first-to-third-question status
+  report, required reading order, official result snapshot, modeling red lines,
+  suggested model-validation route, pros/cons evaluation guidance, and a
+  ready-to-copy prompt.
+- Detected the new `模型分析参考思路/` reference folder and added it to both the
+  handoff prompt and `项目文件导航.md` so the next sub-dialogue can audit those
+  materials without treating them as authoritative results.
+- Updated `README.md`, `task_plan.md`, and `项目文件导航.md` so later sessions can
+  find the new handoff quickly.
+- No solver or optimization command was run in this pass.
+
+## 2026-04-26 All-Question Model Validation And Evaluation
+- Loaded the requested Superpowers/self-improvement/file-planning workflows and
+  reviewed existing `.learnings/` entries before the major validation task.
+- Read the required project navigation, README, output ledger, task plan,
+  progress log, findings, solution outline, original problem statement,
+  supplement, three problem closeout documents, formal JSON/CSV outputs, and
+  the GPT/Gemini model-analysis reference materials.
+- Used web search to calibrate paper-chart conventions against official
+  mathematical-modeling paper display/format sources and method literature.
+- Audited the Gemini model-analysis PDF and rejected its unsupported numerical
+  claims; retained only the general section structure idea.
+- Generated `outputs/model_validation/` as a new derived validation directory,
+  including cost/quality summaries, feasibility matrix, Problem 2 sensitivity
+  tradeoff table, Problem 3 dynamic sensitivity table, case-validation copy,
+  and 7 PNG figures.
+- Added `outputs/model_validation/README.md` and
+  `outputs/model_validation/figure_manifest.md` with figure names, visual
+  elements, design intent, paper placement, and prompts.
+- Added `docs/results/model_validation_and_evaluation_sections.md` as the full
+  paper-writing mother document for sections "模型检验" and "模型优缺点评价".
+- Verified generated PNGs with a nonblank image check and confirmed the derived
+  CSV files are readable.
+- Updated `README.md`, `outputs/README.md`, `项目文件导航.md`, `task_plan.md`,
+  `findings.md`, and `.learnings/ERRORS.md` to record the new documents,
+  derived output directory, and one repeated PowerShell heredoc mistake.
+- No long optimization run was started and no formal Problem 1/2/3 output was
+  overwritten.

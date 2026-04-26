@@ -383,3 +383,48 @@ Next phase:
 - Move to all-question sensitivity analysis or final paper assembly. Do not
   reopen long Problem 3 optimization runs unless a bounded extension and ledger
   plan are created first.
+
+## All-Question Model Validation And Evaluation Handoff
+
+Completed in the 2026-04-26 handoff pass:
+- Added `docs/design/model_validation_and_evaluation_initialization_prompt.md`.
+  It summarizes the current status of Problems 1-3, records the clean output
+  layout, lists required reading files, states modeling red lines, and provides
+  a ready-to-copy prompt for the next sub-dialogue.
+- The next phase is explicitly scoped to paper sections "模型检验" and
+  "模型优缺点评价": feasibility checks, stability/sensitivity analysis,
+  statistical/error discussion, new-vs-old model comparison, strengths,
+  weaknesses, and improvement directions.
+
+Next phase:
+- Use the new initialization prompt to start the all-question validation and
+  evaluation sub-dialogue. Protect `outputs/problem1/`, `outputs/problem2/`,
+  and `outputs/problem3/`; any new validation outputs should use a new labeled
+  directory such as `outputs/model_validation/`.
+
+## All-Question Model Validation And Evaluation Sections
+
+Completed in the 2026-04-26 execution pass:
+- Read the required project ledgers, three problem closeout documents, original
+  problem statement, supplement, formal JSON/CSV outputs, and the two model
+  analysis reference materials.
+- Audited the external reference drafts. The GPT draft's structure was useful;
+  the Gemini draft contained unsupported convergence, seed, DOD, and vehicle
+  counts, so those numbers were not adopted.
+- Added `outputs/model_validation/` as a derived paper-support directory, not a
+  formal result folder. It contains feasibility, cost/quality, Problem 2
+  sensitivity, Problem 3 dynamic sensitivity, case-validation tables, and 7
+  generated figures.
+- Added `outputs/model_validation/README.md` and
+  `outputs/model_validation/figure_manifest.md` to label the tables/figures and
+  record chart names, data sources, visual encodings, design intent, placement,
+  and generation prompts.
+- Added `docs/results/model_validation_and_evaluation_sections.md` as the full
+  paper-writing mother document for sections "模型检验" and "模型优缺点评价".
+
+Current closeout:
+- The generated validation material can be used directly for paper assembly.
+- It does not change the formal Problem 1, Problem 2, or Problem 3 answers.
+- Remaining future work is final paper integration and optional short,
+  explicitly labeled robustness experiments such as speed Monte Carlo replay or
+  multi-seed ALNS stability checks.

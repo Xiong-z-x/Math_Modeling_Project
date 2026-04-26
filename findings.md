@@ -271,3 +271,37 @@ solver code.
   rows in `outputs/problem3/case_validation_summary.csv`. These rows should be
   preferred over ad hoc invented examples because they tie each assumed event
   to an actual route/trip/vehicle effect from the generated outputs.
+
+## All-Question Validation And Evaluation Findings
+
+- The next paper section should evaluate the whole model chain, not only
+  Problem 3. The correct scope is: data processing, static scheduling,
+  green-zone policy, dynamic response, feasibility diagnostics, sensitivity,
+  errors, and practical limitations.
+- Formal result folders are already separated from backups and experiments.
+  Future validation should cite `outputs/problem1/`, `outputs/problem2/`, and
+  `outputs/problem3/` as the main answers; use other folders only when
+  explicitly discussing sensitivity, convergence, or audit evidence.
+- The strongest honest model-evaluation line is: the model is physically
+  grounded and highly auditable, but remains heuristic and data-limited. It
+  should not claim global optimality, path-through-green detection, real
+  dynamic event data, EV charging realism, or full stochastic robustness unless
+  those pieces are added and verified.
+- The executed all-question validation pass produced
+  `docs/results/model_validation_and_evaluation_sections.md` and
+  `outputs/model_validation/`. These outputs are paper-support derivatives, not
+  formal answer folders. The directly citable validation facts are:
+  first/second/third-question formal outputs all pass coverage and capacity
+  checks; second and third questions have policy conflict count `0`; second
+  question costs `595.10` more than first question, about `1.22%`; the service
+  quality sensitivity case reduces second-question maximum lateness to
+  `5.93 min` but costs `50770.72`, so it remains non-formal.
+- The Gemini model-analysis PDF contains unsupported or inconsistent values
+  such as a 400-iteration convergence narrative, 10-seed stability table, DOD
+  curve, and E1 usage above the available fleet. It can inspire section
+  structure but must not be cited for project numbers.
+- For final paper figures, prefer the generated validation plots:
+  feasibility matrix, Problem 1 convergence and lateness diagnosis, Problem 2
+  cost-component shift and cost-quality tradeoff, and Problem 3 cost-response
+  and event-bubble charts. These figures are tied to actual output files and
+  avoid invented sensitivity curves.
