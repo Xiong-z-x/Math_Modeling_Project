@@ -1,0 +1,5 @@
+scenario,event_time,event_type,local_case,affected_trip_vehicle,node_level_effect,dynamic_cost,delta_cost,delta_distance_km,delta_carbon_kg,late_stops,max_late_min,policy_conflicts,changed_stops,vehicle_reassignments,validation
+cancel_future_order_1030,10:30,cancel,取消未发车服务节点 43,T0051 / F1-025,节点 43 从原 T0051 删除；趟次数 115 降至 114,48711.28,-528.51,-194.17,-145.28,12,129.44,0,1,0,完整覆盖、容量可行、物理车辆链可行、政策冲突 0
+new_green_order_1330,13:30,new_order,新增绿区代理节点 149；代理客户 9；需求 300 kg / 1.0 m3；时间窗 14:00-17:00,T0038 / E1-004,节点 149 插入 E1-004 的 T0038 第 2 站；前序节点 8；到达 16:27；无迟到,49237.36,-2.42,-6.37,-0.62,12,129.44,0,2,0,完整覆盖、容量可行、物理车辆链可行、政策冲突 0
+time_window_pull_forward_1500,15:00,time_window_change,服务节点 112 时间窗调整为 18:52-19:46,T0102 / F1-004,节点 112 保持原趟次和车辆；20:14 到达；新增迟到 28.28 min；罚金增加 23.57,49263.35,23.57,0.00,0.00,13,129.44,0,1,0,完整覆盖、容量可行、物理车辆链可行、政策冲突 0
+address_change_proxy_1200,12:00,address_change,服务节点 17 改址为既有客户 12 代理点,T0026 / E1-008,节点 17 和后继节点 25 保持 E1-008/T0026 但重计时；17 到达从 14:09 提前至 13:44,49207.47,-32.31,-25.03,-5.64,12,129.44,0,2,0,完整覆盖、容量可行、物理车辆链可行、政策冲突 0

@@ -258,3 +258,16 @@ solver code.
   table, adjust only the scenario assumptions with explicit labels or rerun
   bounded per-scenario experiments. Do not silently fabricate a better
   optimization outcome.
+- The Problem 3 closeout package now separates three layers clearly:
+  `scenario_assumptions.csv` records the representative event inputs,
+  `scenario_comparison.csv` records measured scenario outputs, and
+  `docs/results/problem3_modeling_and_solution_closeout.md` provides the
+  paper-facing model and interpretation. Future writing should preserve this
+  separation.
+- Problem 3 should be treated as temporarily closed after the 2026-04-26
+  closeout. The next natural phase is all-question sensitivity analysis or
+  final paper assembly, not another unbounded dynamic optimization run.
+- The four Problem 3 representative events now have concrete case-validation
+  rows in `outputs/problem3/case_validation_summary.csv`. These rows should be
+  preferred over ad hoc invented examples because they tie each assumed event
+  to an actual route/trip/vehicle effect from the generated outputs.

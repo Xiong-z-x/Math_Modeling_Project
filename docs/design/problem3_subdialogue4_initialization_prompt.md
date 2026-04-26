@@ -4,7 +4,7 @@
 > `docs/design/problem3_dynamic_response_roadmap.md`。后续实现以该路线图为主，本文保留为初始化提示和题意红线汇总。
 >
 > 2026-04-26 实现补充：第三问已新增动态响应代码、测试和 `outputs/problem3/` 四情景结果；
-> 当前正式摘要见 `docs/results/problem3_dynamic_response_summary.md`。本文中“第三问尚未开始”的段落是历史交接状态，后续以新摘要和 `progress.md` 为准。
+> 当前正式摘要见 `docs/results/problem3_dynamic_response_summary.md`，完整论文收官母稿见 `docs/results/problem3_modeling_and_solution_closeout.md`。本文中“第三问尚未开始”的段落是历史交接状态，后续以新摘要、收官母稿和 `progress.md` 为准。
 
 ## 1. 给主对话的最快项目汇报
 
@@ -180,7 +180,7 @@
    - `outputs/problem3/<scenario_name>/dynamic_diagnosis.csv`
 
 9. **论文总结**  
-   第三问结束时新增 `docs/results/problem3_dynamic_response_summary.md`，结构参考第二问完整收官文档，但要突出动态事件、冻结规则、局部重优化和响应效果。
+   第三问结束时新增 `docs/results/problem3_dynamic_response_summary.md` 和 `docs/results/problem3_modeling_and_solution_closeout.md`，结构参考第二问完整收官文档，但要突出动态事件、冻结规则、局部重优化和响应效果。
 
 ## 5. 第三问实现时的理性要求
 
@@ -347,7 +347,7 @@
    - `outputs/problem3/<scenario>/stop_schedule.csv`
    - `outputs/problem3/<scenario>/route_changes.csv`
    - `outputs/problem3/<scenario>/dynamic_diagnosis.csv`
-9. 第三问收官时新增 `docs/results/problem3_dynamic_response_summary.md`。
+9. 第三问收官时新增 `docs/results/problem3_dynamic_response_summary.md` 和 `docs/results/problem3_modeling_and_solution_closeout.md`。
 
 ### 验证要求
 

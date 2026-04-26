@@ -26,6 +26,10 @@ Problem A, "City Green Logistics Scheduling".
   paper-writing closeout for Problem 2, including assumptions, symbols,
   formulas, constraints, algorithm design, final results, sensitivity notes,
   visualization guidance, and the reserved Problem 3 interface.
+- `docs/results/problem3_modeling_and_solution_closeout.md`: full
+  paper-writing closeout for Problem 3, including event assumptions, symbols,
+  dynamic-state formulas, constraints, algorithm design, scenario results,
+  visualization guidance, references, and final writing posture.
 - `docs/design/problem3_subdialogue4_initialization_prompt.md`: current
   project-status report and ready-to-copy initialization prompt for the next
   sub-dialogue that will solve Problem 3.
@@ -173,11 +177,18 @@ than as an official cost component.
 
 The current Problem 3 representative dynamic-response result is in
 `outputs/problem3/` and summarized in
-`docs/results/problem3_dynamic_response_summary.md`. It runs four scenario
-assumptions covering cancellation, new order, time-window change, and address
-change; all four are complete, capacity feasible, physical-chain feasible, and
+`docs/results/problem3_dynamic_response_summary.md`. The full paper-writing
+closeout is in `docs/results/problem3_modeling_and_solution_closeout.md`, and
+the explicit scenario assumption data are in
+`outputs/problem3/scenario_assumptions.csv`. It runs four scenario assumptions
+covering cancellation, new order, time-window change, and address change; all
+four are complete, capacity feasible, physical-chain feasible, and
 policy-conflict free. The reproducible command is:
 
 ```powershell
 python problems/problem3.py --iterations 8 --remove-count 4 --seed 20260426 --output-dir outputs/problem3 --no-plots
 ```
+
+Problem 3 is now closed for the current modeling round. Future work should move
+to all-question sensitivity analysis or paper assembly unless a clearly scoped,
+bounded Problem 3 extension is requested.

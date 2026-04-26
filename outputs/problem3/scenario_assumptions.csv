@@ -1,0 +1,5 @@
+scenario,event_time,event_type,affected_service_node,new_service_node,proxy_customer_id,assumed_change,reason_for_assumption,source_output
+cancel_future_order_1030,10:30,cancel,43,,,取消一个尚未发车趟次中的服务节点,题面只给订单取消事件类型但未给具体订单编号；选择未发车节点可避免与已装车货物状态冲突,outputs/problem3/cancel_future_order_1030/event_log.csv
+new_green_order_1330,13:30,new_order,,149,9,新增一笔绿区代理订单；需求 300 kg / 1.0 m3；时间窗 14:00-17:00,题面未给新增订单坐标和距离矩阵；使用既有绿区客户代理点可保持距离数据真实且检验绿色限行响应,outputs/problem3/new_green_order_1330/event_log.csv
+time_window_pull_forward_1500,15:00,time_window_change,112,,,将尚未服务节点的时间窗调整为 18:52-19:46,题面给出时间窗调整事件类型但未给新时间窗；选择未来节点并前移时间窗可形成真实迟到压力,outputs/problem3/time_window_pull_forward_1500/event_log.csv
+address_change_proxy_1200,12:00,address_change,17,,12,将一个尚未服务节点的配送地址改为既有客户 12 的位置,题面未给新地址坐标；使用既有客户代理点避免虚构道路距离并保留时变行驶评估,outputs/problem3/address_change_proxy_1200/event_log.csv

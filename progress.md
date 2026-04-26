@@ -642,3 +642,47 @@ to Problem 2 green-zone restrictions.
   obsolete early-planning sentence that said no code or output directory had
   been created.
 - No long solver rerun was started in this consolidation pass.
+
+## 2026-04-26 Problem 3 Closeout Package
+- Used the requested skill workflow for final closeout. `npx skills find
+  "mathematical modeling report writing"` returned only low-install
+  math-reasoning / modeling-adjacent skills, so no new skill was installed;
+  the closeout stayed grounded in local output files, model facts, and
+  literature references.
+- Rechecked `outputs/problem3/recommendation.json`,
+  `outputs/problem3/scenario_comparison.csv`, scenario `summary.json` files,
+  and `event_log.csv` files before writing the final Problem 3 closeout.
+- Added `outputs/problem3/scenario_assumptions.csv` to make the representative
+  event assumptions explicit: cancellation node 43 at 10:30, new green proxy
+  node 149/customer 9 at 13:30, time-window change for node 112 at 15:00, and
+  address-change proxy from node 17 to customer 12 at 12:00.
+- Added `outputs/problem3/README.md` to seal the Problem 3 output directory as
+  a formal representative-scenario package and to mark debug folders as
+  removed/non-formal.
+- Added `docs/results/problem3_modeling_and_solution_closeout.md` as the full
+  paper-writing mother document. It includes problem restatement, assumptions,
+  symbols, state partition, official cost formulas, constraints, algorithm,
+  scenario assumptions, result interpretation, visualization guidance,
+  innovation points, validation, limitations, and draftable paper paragraphs.
+- Updated `README.md`, `outputs/README.md`, `task_plan.md`,
+  `项目文件导航.md`, and
+  `docs/design/problem3_subdialogue4_initialization_prompt.md` so later
+  sessions can find the Problem 3 closeout quickly.
+- No long solver rerun was started; this pass only performed documentation and
+  output-package cleanup.
+
+## 2026-04-26 Problem 3 Case Validation Expansion
+- Reused existing `outputs/problem3/` scenario outputs to answer whether the
+  four representative event assumptions have concrete validation results.
+- Added `outputs/problem3/case_validation_summary.csv`, linking each assumed
+  event to a route-level effect: cancelled node 43 from `F1-025/T0051`, new
+  green proxy node 149 inserted into `E1-004/T0038`, time-window-changed node
+  112 on `F1-004/T0102`, and address-changed node 17 on `E1-008/T0026`.
+- Appended Section 20 to
+  `docs/results/problem3_modeling_and_solution_closeout.md` with four
+  paper-ready cases, direct indicators, route-level changes, validation
+  conclusion, and visualization recommendations.
+- Updated the short Problem 3 summary and output ledgers to point to the new
+  case validation table.
+- No new optimization run was started; all numbers came from the already
+  generated scenario output files.

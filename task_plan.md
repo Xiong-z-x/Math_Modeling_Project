@@ -361,3 +361,25 @@ Known limitation:
 - The event data are representative assumptions, not official records. Address
   changes and new orders use existing customer proxy points to avoid inventing
   a new road-distance matrix.
+
+## Problem 3 Closeout
+
+Completed in the 2026-04-26 closeout pass:
+- Added `docs/results/problem3_modeling_and_solution_closeout.md` as the full
+  paper-writing mother document for Problem 3. It includes problem restatement,
+  assumptions, symbols, dynamic state partition, official cost formulas,
+  constraints, stability metrics, algorithm steps, scenario assumptions,
+  results, visualization guidance, innovation points, validation, limitations,
+  and draftable paper paragraphs.
+- Added `outputs/problem3/scenario_assumptions.csv` so the assumed event data
+  are explicit and separate from official input files.
+- Added `outputs/problem3/README.md` to mark the Problem 3 folder as the formal
+  representative-scenario package and to distinguish retained visualization
+  files from non-formal debug output.
+- Updated project ledgers so future sessions treat Problem 3 as closed for this
+  modeling round.
+
+Next phase:
+- Move to all-question sensitivity analysis or final paper assembly. Do not
+  reopen long Problem 3 optimization runs unless a bounded extension and ledger
+  plan are created first.
