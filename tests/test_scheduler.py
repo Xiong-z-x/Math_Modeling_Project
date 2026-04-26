@@ -7,7 +7,7 @@ from green_logistics.data_processing import load_problem_data
 from green_logistics.data_processing.loader import ProblemData
 from green_logistics.initial_solution import RouteSpec
 from green_logistics.policies import GreenZonePolicyEvaluator
-from green_logistics.scheduler import SchedulingConfig, schedule_route_specs
+from green_logistics.scheduler import SchedulingConfig, VehicleState, schedule_route_specs
 import pandas as pd
 from tests.test_solution import _small_problem_data
 
@@ -133,3 +133,30 @@ def test_ev_reservation_keeps_ev_for_critical_green_trip() -> None:
     by_node = {route.service_node_ids[0]: route.vehicle_type_id for route in solution.routes}
     assert by_node[10] == "F1"
     assert by_node[20] == "E1"
+
+
+def test_scheduler_initial_vehicle_state_controls_availability_and_fixed_cost() -> None:
+    problem = _small_problem_data()
+    specs = (
+        RouteSpec("F1", (10,)),
+        RouteSpec("F1", (20,)),
+    )
+
+    solution = schedule_route_specs(
+        problem,
+        specs,
+        vehicle_counts={"F1": 1},
+        initial_vehicle_states=(
+            VehicleState(
+                vehicle_type_id="F1",
+                vehicle_id="F1-001",
+                available_min=650.0,
+                fixed_cost_if_used=400.0,
+            ),
+        ),
+    )
+
+    assert [route.physical_vehicle_id for route in solution.routes] == ["F1-001", "F1-001"]
+    assert solution.routes[0].depart_min >= 650.0
+    assert solution.routes[0].fixed_cost == 400.0
+    assert solution.routes[1].fixed_cost == 0.0

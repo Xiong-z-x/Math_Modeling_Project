@@ -1,0 +1,2 @@
+﻿scenario,event_type,event_time_min,event_time,selection_strategy,baseline_total_cost,dynamic_total_cost,delta_total_cost,cancelled_node_count,added_node_count,changed_node_count,late_stop_count,baseline_late_stop_count,max_late_min,baseline_max_late_min,policy_conflict_count,physical_time_chain_feasible,is_complete,is_capacity_feasible
+new_green_order_1330,new_order,810.0,13:30,stable_repair,49239.7828661846,49237.36187959906,-2.420986585537321,0,1,0,12,12,129.44182024141378,129.44182024141378,0,True,True,True

@@ -300,3 +300,64 @@ Next phase:
 - Start Problem 3 by re-reading the original problem statement and supplement,
   then build a dynamic-event response roadmap before implementing
   `problems/problem3.py` and its tests.
+
+## Problem 3 Dynamic Response Roadmap
+
+Completed in the 2026-04-26 synthesis pass:
+- Audited the three new Problem 3 reference files under `第三问参考思路/`.
+- Reconfirmed from the original problem statement that Problem 3 lists order
+  cancellation, new orders, address changes, and time-window adjustments, but
+  does not provide concrete event data.
+- Added `docs/design/problem3_dynamic_response_roadmap.md` as the integrated
+  route. The mainline inherits the Problem 2 green-zone policy by assumption,
+  uses `outputs/problem2/` `DEFAULT_SPLIT` as the primary baseline, and keeps
+  `outputs/problem1/` only as a no-policy sensitivity baseline if needed.
+- Recorded the physical cargo-state rule: already departed trips cannot receive
+  new orders or transfer onboard undelivered goods to another vehicle unless a
+  return-to-depot or transfer mechanism is explicitly modeled.
+
+Next implementation priority:
+- P0: add tests for dynamic event ledgers and freeze rules.
+- P1: add `green_logistics/dynamic.py` for events, snapshots, frozen plans, and
+  residual request pools.
+- P2: add scheduler warm-start support for locked routes and initial vehicle
+  availability.
+- P3: add dynamic residual route evaluation without breaking the existing
+  depot-to-depot `evaluate_route()` behavior.
+- P4: add `green_logistics/problem3_engine.py`, `problems/problem3.py`, and
+  output writers under `outputs/problem3/`.
+- P5: add frozen-safe light ALNS and stability diagnostics only after the
+  deterministic repair path is verified.
+
+## Problem 3 Dynamic Response Implementation
+
+Completed in the 2026-04-26 implementation pass:
+- Added `green_logistics/dynamic.py` for dynamic events, route/visit snapshots,
+  locked vs adjustable partitions, and event application to service-node data.
+- Extended `green_logistics/scheduler.py` with `VehicleState`, warm-start
+  availability, and first-use fixed-cost handling while preserving default
+  static behavior.
+- Added `green_logistics/problem3_engine.py` with baseline reconstruction,
+  automatic representative scenarios, stable repair, light ALNS candidate
+  generation, stability-aware selection, route-change diagnostics, and Problem
+  3 output writers.
+- Added `problems/problem3.py` CLI. Default baseline is
+  `outputs/problem2/default_split`, and default output is `outputs/problem3/`.
+- Added tests: `tests/test_dynamic.py`, `tests/test_problem3_engine.py`, and
+  `tests/test_problem3.py`; updated `tests/test_scheduler.py` for warm-start
+  scheduling.
+- Generated `outputs/problem3/` and
+  `docs/results/problem3_dynamic_response_summary.md`.
+
+Current Problem 3 result:
+- Baseline: Problem 2 `DEFAULT_SPLIT`, total cost `49239.78`.
+- Four scenario assumptions: cancellation, new green order, time-window
+  pull-forward, and address-change proxy.
+- All four scenarios are complete, capacity feasible, physical-chain feasible,
+  and policy-conflict free.
+- Scenario costs: `48711.28`, `49237.36`, `49263.35`, and `49207.47`.
+
+Known limitation:
+- The event data are representative assumptions, not official records. Address
+  changes and new orders use existing customer proxy points to avoid inventing
+  a new road-distance matrix.

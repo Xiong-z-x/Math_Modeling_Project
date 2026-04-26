@@ -1,0 +1,2 @@
+﻿scenario,description,event_type,event_time_min,event_time,service_node_id,new_service_node_id,proxy_customer_id,demand_weight_kg,demand_volume_m3,earliest_min,latest_min,event_note,applied_note
+cancel_future_order_1030,10:30 cancellation of a not-yet-departed service node.,cancel,630.0,10:30,43,,,,,,,订单取消：取消一个尚未发车趟次中的服务节点。,cancelled adjustable service node 43

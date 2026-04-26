@@ -200,3 +200,61 @@ solver code.
   final paper because it explicitly separates official objective, hard policy
   feasibility, auxiliary search penalties, service-quality sensitivity, and
   limitations such as the absence of road geometry and EV charging constraints.
+
+## Problem 3 Dynamic Response Findings
+
+- The original Problem 3 statement only specifies event categories: order
+  cancellation, new orders, delivery address changes, and time-window
+  adjustments. It does not provide event timestamps, order IDs, customer IDs,
+  new order demand, new coordinates, or replacement time windows. Any concrete
+  Problem 3 case must therefore be labeled as a scenario assumption.
+- The safest formal mainline is to inherit the Problem 2 green-zone policy and
+  use `outputs/problem2/` `DEFAULT_SPLIT` as the dynamic baseline. This is a
+  modeling choice, because Problem 3 does not explicitly say "on the basis of
+  Problem 2"; a no-policy sensitivity run can use `outputs/problem1/` if the
+  paper needs to discuss that wording ambiguity.
+- The three Problem 3 reference files converge on event-driven rolling-horizon
+  reoptimization, but the code-aware route should be incremental: add a
+  dynamic state layer, scheduler warm start, residual route evaluation, and
+  frozen-safe light ALNS instead of rewriting the whole `Solution` state
+  machine first.
+- Physical cargo state is a hard modeling concern. Once a trip has departed,
+  the remaining planned goods are already onboard; a new order cannot be
+  inserted into that active vehicle unless it returns to depot or an explicit
+  transfer/cross-dock mechanism is modeled. Similarly, undelivered onboard
+  goods should not be transferred to another vehicle just because a route
+  sequence optimizer finds it cheaper.
+- Cancellation before trip departure can reduce loaded demand and downstream
+  energy. Cancellation after trip departure removes the service obligation, but
+  should not automatically reduce vehicle payload unless the model explicitly
+  says where the goods are unloaded.
+- Stability metrics such as changed nodes, vehicle reassignment count, and
+  broken old edges are useful for dynamic-response explanation and search
+  tie-breaks, but they are not official cost components under the current
+  problem statement.
+- The implemented Problem 3 engine uses the Problem 2 `DEFAULT_SPLIT` result as
+  the main baseline and chooses between stable repair and light ALNS with a
+  stability-aware auxiliary score. The selected official scenario costs are:
+  cancellation `48711.28`, new green proxy order `49237.36`, time-window
+  pull-forward `49263.35`, and address-change proxy `49207.47`.
+- The new green-order scenario can slightly reduce official total cost because
+  the inserted service absorbs waiting time in a soft-time-window route. This
+  is a scenario-specific interaction between service time, waiting penalty, and
+  energy cost, not a general claim that new demand lowers cost.
+- A plot-generating all-scenario rerun timed out once and left a Python process
+  running. The final data outputs were regenerated with `--no-plots`; when
+  refreshing Problem 3 visuals, prefer per-scenario commands or check for
+  residual Python processes after timeouts.
+- The final paper-facing Problem 3 route should be framed as representative
+  dynamic scenario evaluation, not as official dynamic-event data. This is the
+  cleanest way to satisfy the problem statement without inventing hidden
+  attachment records.
+- The strongest innovation claim is not "global optimum under all disruptions";
+  it is the operationally credible combination of event-triggered rolling
+  horizon, executed-fact freezing, cargo-state conservation, green-policy
+  guards, short-budget local reoptimization, and separately reported stability
+  metrics.
+- If the paper needs more polished numbers than the current four-scenario
+  table, adjust only the scenario assumptions with explicit labels or rerun
+  bounded per-scenario experiments. Do not silently fabricate a better
+  optimization outcome.

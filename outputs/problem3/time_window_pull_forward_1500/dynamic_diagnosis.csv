@@ -1,0 +1,2 @@
+﻿scenario,event_type,event_time_min,event_time,selection_strategy,baseline_total_cost,dynamic_total_cost,delta_total_cost,cancelled_node_count,added_node_count,changed_node_count,late_stop_count,baseline_late_stop_count,max_late_min,baseline_max_late_min,policy_conflict_count,physical_time_chain_feasible,is_complete,is_capacity_feasible
+time_window_pull_forward_1500,time_window_change,900.0,15:00,stable_repair,49239.7828661846,49263.352554785124,23.569688600524387,0,0,1,13,12,129.44182024141378,129.44182024141378,0,True,True,True

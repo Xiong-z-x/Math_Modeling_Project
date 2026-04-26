@@ -19,6 +19,16 @@ _SERVICE_NODE_LOOKUP_CACHE: dict[int, dict[int, dict[str, object]]] = {}
 
 
 @dataclass(frozen=True)
+class VehicleState:
+    """Availability of one physical vehicle at the start of a scheduling pass."""
+
+    vehicle_type_id: str
+    vehicle_id: str
+    available_min: float
+    fixed_cost_if_used: float = 0.0
+
+
+@dataclass(frozen=True)
 class SchedulingConfig:
     """Configuration for physical-vehicle trip scheduling.
 
@@ -38,6 +48,8 @@ class SchedulingConfig:
     ev_reservation_enabled: bool = False
     ev_reservation_penalty: float = 0.0
     green_critical_latest_min: float = 960.0
+    new_vehicle_available_min: float = DAY_START_MIN
+    initial_vehicle_states: tuple[VehicleState, ...] = ()
 
 
 def schedule_route_specs(
@@ -47,6 +59,7 @@ def schedule_route_specs(
     vehicle_counts: Mapping[str, int] | None = None,
     required_node_ids: Iterable[int] | None = None,
     config: SchedulingConfig | None = None,
+    initial_vehicle_states: Sequence[VehicleState] | None = None,
 ) -> Solution:
     """Assign trip specs to physical vehicles and evaluate actual timings."""
 
@@ -61,7 +74,9 @@ def schedule_route_specs(
         )
     )
     ordered_specs = sorted(specs, key=lambda spec: spec_time_key(problem, spec))
-    vehicles_by_type: dict[str, list[dict[str, object]]] = {}
+    vehicles_by_type = _initial_vehicle_pools(
+        initial_vehicle_states if initial_vehicle_states is not None else cfg.initial_vehicle_states
+    )
     scheduled_routes: list[Route] = []
 
     for spec_index, spec in enumerate(ordered_specs, start=1):
@@ -79,12 +94,13 @@ def schedule_route_specs(
             existing = vehicles_by_type.setdefault(vehicle_type_id, [])
 
             for vehicle in existing:
+                fixed_cost_if_used = float(vehicle.get("fixed_cost_if_used", 0.0))
                 depart_min = choose_departure_min(
                     problem,
                     spec,
                     vehicle_type_id,
                     available_min=float(vehicle["available_min"]),
-                    fixed_cost=0.0,
+                    fixed_cost=fixed_cost_if_used,
                     config=cfg,
                 )
                 candidate = evaluate_route(
@@ -92,7 +108,7 @@ def schedule_route_specs(
                     vehicle_type_id,
                     spec.service_node_ids,
                     depart_min=depart_min,
-                    fixed_cost=0.0,
+                    fixed_cost=fixed_cost_if_used,
                     physical_vehicle_id=str(vehicle["vehicle_id"]),
                     trip_id=f"T{spec_index:04d}",
                 )
@@ -105,12 +121,12 @@ def schedule_route_specs(
                     best_score = candidate_score
 
             if len(existing) < counts[vehicle_type_id]:
-                vehicle_id = f"{vehicle_type_id}-{len(existing) + 1:03d}"
+                vehicle_id = _next_vehicle_id(vehicle_type_id, existing)
                 depart_min = choose_departure_min(
                     problem,
                     spec,
                     vehicle_type_id,
-                    available_min=float(DAY_START_MIN),
+                    available_min=float(cfg.new_vehicle_available_min),
                     fixed_cost=FIXED_COST_PER_VEHICLE,
                     config=cfg,
                 )
@@ -126,7 +142,11 @@ def schedule_route_specs(
                 candidate_score = scheduling_selection_score(problem, candidate, cfg)
                 if candidate_score < best_score:
                     best_route = candidate
-                    best_vehicle = {"vehicle_id": vehicle_id, "available_min": DAY_START_MIN}
+                    best_vehicle = {
+                        "vehicle_id": vehicle_id,
+                        "available_min": cfg.new_vehicle_available_min,
+                        "fixed_cost_if_used": 0.0,
+                    }
                     best_vehicle_pool = existing
                     best_is_new = True
                     best_score = candidate_score
@@ -135,11 +155,39 @@ def schedule_route_specs(
             raise ValueError(f"no physical vehicle available for trip {spec_index}")
 
         best_vehicle["available_min"] = best_route.return_min + cfg.reload_time_min
+        best_vehicle["fixed_cost_if_used"] = 0.0
         if best_is_new:
             best_vehicle_pool.append(best_vehicle)
         scheduled_routes.append(best_route)
 
     return evaluate_solution(scheduled_routes, required_node_ids=required)
+
+
+def _initial_vehicle_pools(states: Sequence[VehicleState]) -> dict[str, list[dict[str, object]]]:
+    vehicles_by_type: dict[str, list[dict[str, object]]] = {}
+    for state in states:
+        if state.vehicle_type_id not in VEHICLE_TYPES:
+            raise ValueError(f"unknown vehicle type in initial state: {state.vehicle_type_id!r}")
+        vehicles_by_type.setdefault(state.vehicle_type_id, []).append(
+            {
+                "vehicle_id": state.vehicle_id,
+                "available_min": float(state.available_min),
+                "fixed_cost_if_used": float(state.fixed_cost_if_used),
+            }
+        )
+    for vehicles in vehicles_by_type.values():
+        vehicles.sort(key=lambda vehicle: (float(vehicle["available_min"]), str(vehicle["vehicle_id"])))
+    return vehicles_by_type
+
+
+def _next_vehicle_id(vehicle_type_id: str, existing: Sequence[dict[str, object]]) -> str:
+    used = {str(vehicle["vehicle_id"]) for vehicle in existing}
+    index = 1
+    while True:
+        candidate = f"{vehicle_type_id}-{index:03d}"
+        if candidate not in used:
+            return candidate
+        index += 1
 
 
 def choose_departure_min(

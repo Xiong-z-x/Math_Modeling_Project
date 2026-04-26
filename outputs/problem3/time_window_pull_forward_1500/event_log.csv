@@ -1,0 +1,2 @@
+﻿scenario,description,event_type,event_time_min,event_time,service_node_id,new_service_node_id,proxy_customer_id,demand_weight_kg,demand_volume_m3,earliest_min,latest_min,event_note,applied_note
+time_window_pull_forward_1500,15:00 pull one future time window forward.,time_window_change,900.0,15:00,112,,,,,1132.0,1186.0,时间窗调整：将一个尚未服务节点的时间窗提前压缩。,changed time window for adjustable service node 112

@@ -29,6 +29,10 @@ Problem A, "City Green Logistics Scheduling".
 - `docs/design/problem3_subdialogue4_initialization_prompt.md`: current
   project-status report and ready-to-copy initialization prompt for the next
   sub-dialogue that will solve Problem 3.
+- `docs/design/problem3_dynamic_response_roadmap.md`: integrated Problem 3
+  route after auditing the new Claude/Gemini/GPT reference files. It records
+  the final dynamic-event modeling assumptions, physical cargo-state rules,
+  module priorities, outputs, and validation plan.
 - `docs/design/problem2_subdialogue3_optimization_handoff.md`: one-page
   handoff report plus a ready-to-use initialization prompt for the next Problem
   2 optimization sub-dialogue.
@@ -87,6 +91,9 @@ The implemented foundation now includes:
 9. `green_logistics/output.py`, `problems/problem1.py`, and
    `problems/experiments/problem1_convergence.py`: Problem 1 CSV/JSON exports,
    service-quality summaries, paper-ready plots, and convergence experiments.
+10. `green_logistics/dynamic.py`, `green_logistics/problem3_engine.py`, and
+    `problems/problem3.py`: Problem 3 dynamic-event snapshots, stable repair
+    plus light-ALNS response, scenario outputs, and route-change diagnostics.
 
 Use the data layer through:
 
@@ -156,3 +163,21 @@ The Problem 3 handoff and initialization prompt is now in
 current clean output layout, required reading order, modeling red lines,
 recommended dynamic-response route, validation checklist, and a prompt that can
 be copied into the next sub-dialogue.
+
+The integrated Problem 3 technical roadmap is now in
+`docs/design/problem3_dynamic_response_roadmap.md`. The recommended mainline is
+to treat `outputs/problem2/` `DEFAULT_SPLIT` as the green-policy baseline,
+freeze executed facts, preserve active-trip cargo physics, reoptimize only the
+future residual pool, and report route stability as an auxiliary metric rather
+than as an official cost component.
+
+The current Problem 3 representative dynamic-response result is in
+`outputs/problem3/` and summarized in
+`docs/results/problem3_dynamic_response_summary.md`. It runs four scenario
+assumptions covering cancellation, new order, time-window change, and address
+change; all four are complete, capacity feasible, physical-chain feasible, and
+policy-conflict free. The reproducible command is:
+
+```powershell
+python problems/problem3.py --iterations 8 --remove-count 4 --seed 20260426 --output-dir outputs/problem3 --no-plots
+```

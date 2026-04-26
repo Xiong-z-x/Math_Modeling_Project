@@ -1,0 +1,5 @@
+﻿scenario,event_type,event_time_min,selection_strategy,baseline_total_cost,dynamic_total_cost,delta_total_cost,policy_conflict_count,is_complete,is_capacity_feasible,physical_time_chain_feasible,late_stop_count,max_late_min,changed_stop_count,vehicle_reassignment_count
+cancel_future_order_1030,cancel,630.0,stable_repair,49239.7828661846,48711.277380031286,-528.5054861533135,0,True,True,True,12,129.44182024141378,1,0
+new_green_order_1330,new_order,810.0,stable_repair,49239.7828661846,49237.36187959906,-2.420986585537321,0,True,True,True,12,129.44182024141378,2,0
+time_window_pull_forward_1500,time_window_change,900.0,stable_repair,49239.7828661846,49263.352554785124,23.569688600524387,0,True,True,True,13,129.44182024141378,1,0
+address_change_proxy_1200,address_change,720.0,stable_repair,49239.7828661846,49207.47462289152,-32.30824329308234,0,True,True,True,12,129.44182024141378,2,0

@@ -569,3 +569,76 @@ to Problem 2 green-zone restrictions.
   work to the new Problem 3 handoff and to preserve the rule that Problem 3
   outputs must go under `outputs/problem3/`, not overwrite Problem 1 or
   Problem 2 formal results.
+
+## 2026-04-26 Problem 3 Reference Synthesis And Roadmap
+- Used the requested brainstorming and self-improvement workflows for the
+  planning pass.
+- Read the three new Problem 3 reference files:
+  `第三问参考思路/claude第三问参考思路：第三问完整方案.md`,
+  `第三问参考思路/gpt第三问参考思路：deep-research-report.md`, and
+  `第三问参考思路/gemini第三问参考思路：绿色物流调度项目审计.pdf`.
+- Rechecked the original problem statement and supplement. Problem 3 gives
+  event categories but no concrete event time, order ID, customer ID, new
+  location, demand, or new time-window data, so formal examples must be written
+  as scenario assumptions.
+- Added `docs/design/problem3_dynamic_response_roadmap.md`. The roadmap
+  resolves the three references into an event-driven rolling-horizon framework:
+  freeze executed facts, protect in-transit cargo physics, reoptimize the
+  residual future pool, use quick deterministic repair plus light ALNS, and
+  report stability as an auxiliary metric.
+- Updated `README.md`, `task_plan.md`, `findings.md`, `解题总思路.md`, and
+  `项目文件导航.md` to point to the new Problem 3 route and the implementation
+  priority order.
+- No Python solver files were modified and no Problem 3 output directory was
+  created in this pass.
+
+## 2026-04-26 Problem 3 Dynamic Response Implementation
+- Implemented the third-question dynamic layer with TDD:
+  `tests/test_dynamic.py` first failed on missing `green_logistics.dynamic`,
+  then passed after adding dynamic event, snapshot, and event-application
+  helpers.
+- Extended `green_logistics/scheduler.py` with warm-start `VehicleState`.
+  The scheduler can now start from physical vehicles already available at an
+  event time and charge fixed cost only on first use when needed.
+- Added `green_logistics/problem3_engine.py` and `problems/problem3.py`.
+  The engine reconstructs the Problem 2 baseline from `route_summary.csv`,
+  freezes locked trips, applies representative events, repairs the residual
+  future pool, compares stable repair against light ALNS, and selects the
+  lower dynamic score while keeping official cost separate.
+- Generated `outputs/problem3/` with four scenario assumptions:
+  cancellation at 10:30, new green proxy order at 13:30, time-window
+  pull-forward at 15:00, and address-change proxy at 12:00.
+- Current scenario costs are `48711.28`, `49237.36`, `49263.35`, and
+  `49207.47`; all have complete coverage, capacity feasibility, physical
+  vehicle time-chain feasibility, and zero green-policy conflicts.
+- Added `docs/results/problem3_dynamic_response_summary.md` for paper-facing
+  summary and updated project ledgers.
+- A full plot-generating rerun timed out and left a Python process alive; it
+  was terminated, recorded in `.learnings/ERRORS.md`, and the final CSV/JSON
+  outputs were refreshed with the bounded `--no-plots` command. Existing PNGs
+  from the completed full output pass are retained for visualization.
+- After the user asked to stop long-running improvement loops and emphasize
+  language-based modeling, enriched
+  `docs/results/problem3_dynamic_response_summary.md` with the formal dynamic
+  state partition, official cost objective, auxiliary stability metric, and
+  hard feasibility constraints.
+
+## 2026-04-26 Problem 3 Paper-Oriented Modeling Consolidation
+- Resumed after a quota interruption and rechecked the current workspace
+  state: Problem 3 code and `outputs/problem3/` already exist, no residual
+  Python process was running, and the four-scenario comparison CSV still
+  reports all scenarios as complete, capacity feasible, physical-chain
+  feasible, and zero policy-conflict.
+- Switched the remaining work from long optimization to paper-facing
+  modeling, per user direction. The accepted writing posture is: representative
+  scenario assumptions are valid because the statement gives no concrete
+  dynamic event data, but they must not be described as official attachment
+  records.
+- Updated `docs/results/problem3_dynamic_response_summary.md` with direct
+  handling rules for cancellation, new orders, address changes, and time-window
+  adjustments; added the two-layer innovation statement separating official
+  cost from auxiliary stability; and added literature-backed writing guidance.
+- Updated `docs/design/problem3_dynamic_response_roadmap.md` to remove the
+  obsolete early-planning sentence that said no code or output directory had
+  been created.
+- No long solver rerun was started in this consolidation pass.

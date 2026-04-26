@@ -1,0 +1,2 @@
+﻿scenario,description,event_type,event_time_min,event_time,service_node_id,new_service_node_id,proxy_customer_id,demand_weight_kg,demand_volume_m3,earliest_min,latest_min,event_note,applied_note
+address_change_proxy_1200,12:00 address change represented by another existing customer.,address_change,720.0,12:00,17,,12,,,,,地址变更：使用既有客户点作为代理地址，避免虚构新距离矩阵。,changed address for node 17 to proxy customer 12

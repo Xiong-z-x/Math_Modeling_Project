@@ -1,0 +1,2 @@
+﻿scenario,description,event_type,event_time_min,event_time,service_node_id,new_service_node_id,proxy_customer_id,demand_weight_kg,demand_volume_m3,earliest_min,latest_min,event_note,applied_note
+new_green_order_1330,13:30 new order represented by an existing green-zone customer proxy.,new_order,810.0,13:30,,149,9,300.0,1.0,840.0,1020.0,新增订单：以既有绿区客户作为代理点，需求 300 kg / 1.0 m3。,added proxy service node 149 at customer 9
