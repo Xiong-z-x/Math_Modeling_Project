@@ -428,3 +428,48 @@ Current closeout:
 - Remaining future work is final paper integration and optional short,
   explicitly labeled robustness experiments such as speed Monte Carlo replay or
   multi-seed ALNS stability checks.
+
+## GPT Pro Advanced Figure Prompt Pack
+
+Completed in the 2026-04-26 visualization-planning pass:
+- Added `outputs/gpt_pro_visual_pack/` and
+  `outputs/gpt_pro_visual_pack.zip`.
+- Exported project-derived CSV inputs for 10 higher-quality Chinese chart
+  designs: spatial demand KDE, order-to-service-node Sankey, speed-energy
+  space-time cube, static route risk map, policy cost/carbon migration,
+  green-service compliance timeline, Problem 2 Pareto tradeoff, Problem 3
+  event-response matrix, rolling-horizon Gantt, and full-model validation
+  matrix.
+- Added `outputs/gpt_pro_visual_pack/visual_prompt_brief.md` with chart names,
+  visual encodings, design intent, paper placement, and exact GPT Pro prompts.
+- Added `outputs/gpt_pro_visual_pack/gpt_pro_master_prompt.md` as the first
+  message to give GPT Pro before per-figure generation. It forces project
+  comprehension, data reading, high-signal visual selection, and post-generation
+  self-checks.
+- Added `outputs/gpt_pro_visual_pack/prompt_research_notes.md` to preserve the
+  prompting sources and `find-skills` lookup record.
+
+Boundary:
+- The pack must not be used to fabricate measured model results. Conceptual
+  diagrams are allowed only when clearly labeled as mechanism or theory
+  sketches.
+- Route arcs in the pack are visual visit-order links, not road geometries.
+
+## Final Paper Writing Handoff
+
+Completed in the 2026-04-26 paper-transition pass:
+- Created the project-specific skill
+  `.agents/skills/hzcup-green-logistics-paper-writer/` with a valid
+  `SKILL.md`, `agents/openai.yaml`, and five reference files: project facts,
+  source map, section rules, figure/table plan, and template research notes.
+- Created `docs/paper_writing/project_closeout_full_summary.md` as the
+  all-question closeout summary and paper-writing mother outline.
+- Created `docs/paper_writing/new_model_paper_writing_prompt.md` for handing
+  the project to a fresh model before formal paper drafting.
+- Downloaded directly accessible national paper-format references into
+  `论文模板案例/web_references/` for style comparison.
+
+Boundary:
+- Formal result folders `outputs/problem1/`, `outputs/problem2/`, and
+  `outputs/problem3/` remain untouched. Paper-writing work should cite them as
+  formal evidence and keep experiments/prompts/visual packs clearly labeled.

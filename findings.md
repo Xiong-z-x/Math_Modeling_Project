@@ -305,3 +305,39 @@ solver code.
   cost-component shift and cost-quality tradeoff, and Problem 3 cost-response
   and event-bubble charts. These figures are tied to actual output files and
   avoid invented sensitivity curves.
+- The GPT Pro figure pack at `outputs/gpt_pro_visual_pack/` is designed for
+  higher-quality Chinese visuals. Its CSV inputs are derived from project data:
+  customer spatial demand, green-zone boundary, aggregation/split facts,
+  speed-energy theoretical profile, route visual arcs, policy comparison,
+  Problem 2 tradeoffs, and Problem 3 event response. Any route arc in that pack
+  is only a visual connection between visited customers, not road geometry.
+- `outputs/gpt_pro_visual_pack/gpt_pro_master_prompt.md` should be used as the
+  first GPT Pro message before per-figure prompts. It asks the model to read
+  the uploaded files, choose high-signal visual slices without changing CSV
+  values, and self-check against hallucinated cost terms, nonexistent road
+  geometry, zero-emission EV claims, and unsupported dynamic-event facts.
+- `outputs/gpt_pro_visual_pack/prompt_research_notes.md` records the external
+  prompting references and `find-skills` lookup used to shape the master prompt.
+
+## Final Paper Writing Handoff Findings
+
+- A project-specific writing skill now exists at
+  `.agents/skills/hzcup-green-logistics-paper-writer/`. It should be loaded
+  before drafting the final HuaZhong Cup paper or handing the project to a new
+  model.
+- `docs/paper_writing/project_closeout_full_summary.md` is the current
+  all-question paper-writing mother outline. It is the cleanest single file for
+  understanding the finished technical route, results, formulas, model
+  assumptions, validation evidence, figure plan, and remaining limitations.
+- `docs/paper_writing/new_model_paper_writing_prompt.md` is the recommended
+  first prompt for a fresh model. It forces the new model to read the skill,
+  formal outputs, closeout docs, and red lines before drafting.
+- The eighteenth HuaZhong Cup notice should be treated as the current format
+  constraint: no directory and main body no more than 30 pages excluding
+  abstract and appendices. Therefore a long 30+ page working draft should move
+  code, route tables, and figure prompt details into appendices/support files
+  before final submission.
+- Directly downloadable public format references were stored under
+  `论文模板案例/web_references/`. Recent HuaZhong Cup full-paper downloads found
+  online were mostly preview/commercial/non-authoritative pages and should not
+  be used as evidence for project results.

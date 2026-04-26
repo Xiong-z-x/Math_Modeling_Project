@@ -1,0 +1,7 @@
+case,coverage_feasible,capacity_feasible,physical_chain_feasible,policy_conflict_count,late_stop_count,max_late_min
+P1 formal,True,True,True,,4,31.59558422860732
+P2 formal,True,True,True,0.0,12,129.44182024141378
+cancel_future_order_1030,True,True,True,0.0,12,129.44182024141378
+new_green_order_1330,True,True,True,0.0,12,129.44182024141378
+time_window_pull_forward_1500,True,True,True,0.0,13,129.44182024141378
+address_change_proxy_1200,True,True,True,0.0,12,129.44182024141378

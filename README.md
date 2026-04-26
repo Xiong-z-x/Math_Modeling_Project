@@ -58,6 +58,13 @@ Problem A, "City Green Logistics Scheduling".
 - `outputs/model_validation/`: derived validation tables and figures for the
   final paper. This directory is not a formal answer folder for any single
   problem.
+- `outputs/gpt_pro_visual_pack/`: Chinese prompt and data pack for regenerating
+  higher-quality paper figures in GPT Pro from project-derived CSV files.
+- `.agents/skills/hzcup-green-logistics-paper-writer/`: project-specific skill
+  for final HuaZhong Cup A-paper summarization, drafting, figure planning, and
+  consistency checks.
+- `docs/paper_writing/`: paper-writing handoff artifacts, including the
+  all-question closeout summary and a new-model startup prompt.
 - `.learnings/`: local self-improvement notes for tool errors and reusable
   lessons. These are ignored by git and are not solver input data.
 - `green_logistics/`: Python package for the solver implementation.
@@ -213,3 +220,17 @@ The all-question validation and evaluation paper draft is now in
 and figures are in `outputs/model_validation/`; these are paper support
 materials only and do not replace the formal `outputs/problem1/`,
 `outputs/problem2/`, or `outputs/problem3/` results.
+
+A higher-level GPT Pro figure-generation pack is available at
+`outputs/gpt_pro_visual_pack/` and zipped as
+`outputs/gpt_pro_visual_pack.zip`. It includes a GPT Pro master prompt,
+prompt-research notes, Chinese per-figure prompts, data-source mapping, and
+CSV inputs for spatial demand, service-node splitting,
+time-dependent energy curves, green-policy comparison, Problem 2 tradeoffs,
+and Problem 3 dynamic scenarios.
+
+The paper-writing handoff is now anchored by
+`docs/paper_writing/project_closeout_full_summary.md` and
+`.agents/skills/hzcup-green-logistics-paper-writer/`. These files summarize the
+formal results, non-formal sensitivity outputs, figure/table plan, and writing
+rules for the final HuaZhong Cup paper.

@@ -1,0 +1,7 @@
+level_code,count,meaning
+raw_orders,2169,Rows in orders workbook
+active_customers,88,Customers with nonzero demand
+virtual_service_nodes,148,Algorithm service nodes after 3000kg/15m3 split
+active_green_customers,12,Green-zone customers with orders
+green_service_nodes,19,Virtual service nodes mapped to green-zone customers
+split_customers,36,Customers split into more than one service node

@@ -63,11 +63,17 @@ paper visualization.
 | `outputs/problem2_previous_49888_20260425/` | audit backup | Previous formal Problem 2 result before EV-reservation optimization; total cost `49888.84` |
 | `outputs/problem2_experiments/` | experiment ledger | Parameter and operator screening outputs; not formal unless promoted; `formal_screen_policy_ev_p500/` is retained as the service-quality sensitivity case with total cost `50770.72`, 2 late stops, and max late `5.93` min |
 | `outputs/model_validation/` | paper support | Derived all-question validation tables and figures for "模型检验" and "模型优缺点评价"; not a formal Problem 1/2/3 result folder |
+| `outputs/gpt_pro_visual_pack/` | paper figure prompt pack | GPT Pro master prompt, prompt-research notes, Chinese per-figure prompts, and project-derived CSV inputs for regenerating higher-quality visuals; not a solver output and not a source of new formal results |
 | `outputs/experiments/problem1_convergence_smoke/` | smoke experiment | Small convergence-script output, not a paper result |
 
 These folders should not be cited as the main Problem 1 or Problem 2 answer
 unless the paper explicitly presents them as sensitivity, convergence, or audit
 evidence.
+
+Paper-writing handoff artifacts live outside `outputs/` under
+`docs/paper_writing/` and `.agents/skills/hzcup-green-logistics-paper-writer/`.
+They summarize and organize formal outputs but do not replace the solver result
+folders.
 
 ## Cleaned Temporary Outputs
 

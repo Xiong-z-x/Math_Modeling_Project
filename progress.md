@@ -734,3 +734,55 @@ to Problem 2 green-zone restrictions.
   derived output directory, and one repeated PowerShell heredoc mistake.
 - No long optimization run was started and no formal Problem 1/2/3 output was
   overwritten.
+
+## 2026-04-26 GPT Pro Advanced Figure Prompt Pack
+- Responded to the request for higher-quality, Chinese, competition-paper
+  visual specifications by creating a separate uploadable data/prompt folder:
+  `outputs/gpt_pro_visual_pack/`.
+- Refused to package fabricated measured results as real project data; instead
+  used project-derived CSVs and allowed only clearly labeled theoretical or
+  mechanism diagrams.
+- Exported CSV inputs for customer spatial demand, green-zone boundary, order
+  aggregation and virtual-node splitting, speed-energy theoretical profiles,
+  P1/P2 route visual arcs, green-policy timeline, Problem 2 cost-service
+  tradeoffs, Problem 3 event response, and feasibility validation.
+- Added `outputs/gpt_pro_visual_pack/visual_prompt_brief.md` with 10 advanced
+  Chinese chart concepts, each specifying chart name, visual encodings, design
+  intent, paper placement, exact data files, and GPT Pro prompt.
+- Added `outputs/gpt_pro_visual_pack/README.md` and created
+  `outputs/gpt_pro_visual_pack.zip` for convenient upload.
+- Updated `README.md`, `outputs/README.md`, `项目文件导航.md`, `findings.md`,
+  and `progress.md` to record the new figure prompt pack.
+- No formal solver output was modified.
+
+## 2026-04-26 GPT Pro Master Prompt Refinement
+- Used the requested `find-skills` workflow and a web search pass over official
+  OpenAI prompting material plus public prompt repositories to refine the image
+  generation workflow.
+- Added `outputs/gpt_pro_visual_pack/gpt_pro_master_prompt.md`, a first-message
+  prompt that asks GPT Pro to understand project facts, read the prepared CSVs,
+  select high-signal data slices, generate one figure at a time, and self-check
+  every chart against project red lines.
+- Added `outputs/gpt_pro_visual_pack/prompt_research_notes.md` to record the
+  OpenAI/GitHub prompting references and `find-skills` search result used for
+  the master prompt.
+- Repacked `outputs/gpt_pro_visual_pack.zip` so the master prompt is included in
+  the uploadable bundle.
+
+## 2026-04-26 Final Paper Writing Handoff
+- Read the local HuaZhong Cup template folder, the formal result closeout
+  documents, model-validation mother draft, and the key formal JSON/CSV outputs
+  for Problems 1-3.
+- Used the requested `find-skills`, `skill-creator`, and brainstorming
+  workflows. External generic writing/LaTeX skills were found but not installed
+  because the project requires tighter domain-specific red lines.
+- Downloaded directly accessible national paper-format references to
+  `论文模板案例/web_references/`.
+- Created `.agents/skills/hzcup-green-logistics-paper-writer/`, including
+  `SKILL.md`, `agents/openai.yaml`, and reference files for project facts,
+  result boundaries, section rules, figure/table planning, and template/web
+  research notes.
+- Created `docs/paper_writing/project_closeout_full_summary.md` and
+  `docs/paper_writing/new_model_paper_writing_prompt.md`.
+- Validated the new skill with the skill-creator `quick_validate.py` script.
+- No formal Problem 1/2/3 output folders were modified.

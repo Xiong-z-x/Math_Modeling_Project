@@ -1,0 +1,4 @@
+interface:
+  display_name: "华中杯绿色物流论文写作"
+  short_description: "Project-specific Huazhong Cup A paper writer"
+  default_prompt: "请基于 c:\\Math_Modeling_Project 的题面、正式输出和写作资料，生成华中杯 A 题论文正文。"
