@@ -1,0 +1,13 @@
+{
+  "created_for": "GPT Pro Chinese figure generation prompt pack",
+  "data_policy": "All CSV data are derived from project files. Do not fabricate measured results. Conceptual/theoretical diagrams must be labeled as mechanism sketches.",
+  "formal_outputs": [
+    "outputs/problem1/",
+    "outputs/problem2/",
+    "outputs/problem3/"
+  ],
+  "visual_pack_data_dir": "outputs/gpt_pro_visual_pack/data",
+  "green_zone_center": "(0,0)",
+  "depot_coordinate": "(20,20)",
+  "warning": "Route arcs are straight visual links only; the project has no road geometry for path-through-green-zone detection."
+}

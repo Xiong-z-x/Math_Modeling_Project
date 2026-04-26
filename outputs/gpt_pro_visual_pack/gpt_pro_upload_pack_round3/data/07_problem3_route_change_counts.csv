@@ -1,0 +1,14 @@
+change_type,count,scenario
+unchanged,86,address_change_proxy_1200
+locked_unchanged,60,address_change_proxy_1200
+retimed,2,address_change_proxy_1200
+unchanged,101,cancel_future_order_1030
+locked_unchanged,46,cancel_future_order_1030
+cancelled,1,cancel_future_order_1030
+unchanged,77,new_green_order_1330
+locked_unchanged,70,new_green_order_1330
+sequence_changed,1,new_green_order_1330
+new,1,new_green_order_1330
+locked_unchanged,101,time_window_pull_forward_1500
+unchanged,46,time_window_pull_forward_1500
+event_modified,1,time_window_pull_forward_1500

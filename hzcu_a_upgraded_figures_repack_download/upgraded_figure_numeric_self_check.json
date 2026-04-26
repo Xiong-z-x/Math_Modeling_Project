@@ -1,0 +1,212 @@
+{
+  "up_fig01": {
+    "source_csv": [
+      "01_customer_spatial_demand.csv",
+      "01_green_zone_boundary.csv",
+      "01_key_points.csv"
+    ],
+    "customers": 88,
+    "green_customers": 12,
+    "top_demand_customer_id": 8,
+    "top_demand_index_0_100": 97.428,
+    "green_zone_radius_km": 10.0
+  },
+  "up_fig02": {
+    "source_csv": [
+      "02_order_aggregation_split_summary.csv",
+      "02_customer_split_detail.csv"
+    ],
+    "raw_orders": 2169,
+    "active_customers": 88,
+    "virtual_service_nodes": 148,
+    "active_green_customers": 12,
+    "green_service_nodes": 19,
+    "split_customers": 36,
+    "top10_split_customer_ids": [
+      55,
+      8,
+      60,
+      7,
+      42,
+      48,
+      31,
+      62,
+      64,
+      59
+    ],
+    "top10_split_counts": [
+      5,
+      4,
+      4,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ]
+  },
+  "up_fig03": {
+    "source_csv": [
+      "03_speed_energy_profile.csv"
+    ],
+    "periods": 7,
+    "load_ratios": [
+      0.0,
+      0.5,
+      1.0
+    ],
+    "fuel_min_max": [
+      25.27,
+      41.36
+    ],
+    "ev_min_max": [
+      33.73,
+      47.49
+    ]
+  },
+  "up_fig04": {
+    "source_csv": [
+      "04_route_visual_arcs_p1_p2.csv",
+      "01_customer_spatial_demand.csv",
+      "01_green_zone_boundary.csv"
+    ],
+    "problem1_arcs": 264,
+    "vehicle_types": [
+      "E1",
+      "F1"
+    ],
+    "late_trips_trip_max_late_gt0": 4,
+    "max_trip_late_min": 31.6
+  },
+  "up_fig05": {
+    "source_csv": [
+      "05_policy_cost_carbon_shift.csv"
+    ],
+    "p1_total_cost": 48644.68,
+    "p2_total_cost": 49239.78,
+    "delta_cost": 595.1,
+    "p1_carbon_kg": 8337.49,
+    "p2_carbon_kg": 8156.49,
+    "p2_policy_conflict_count": 0
+  },
+  "up_fig06": {
+    "source_csv": [
+      "05_green_service_policy_timeline.csv"
+    ],
+    "policy_conflict_by_case": {
+      "problem1_screened_under_p2_policy": 12,
+      "problem2_formal": 0
+    },
+    "green_services_by_case": {
+      "problem1_screened_under_p2_policy": 19,
+      "problem2_formal": 19
+    }
+  },
+  "up_fig07": {
+    "source_csv": [
+      "06_problem2_candidate_tradeoff.csv"
+    ],
+    "variants": [
+      "default_split",
+      "green_e2_adaptive",
+      "green_hotspot_partial",
+      "policy_ops_ev_reservation_p500"
+    ],
+    "default_total_cost": 49239.78,
+    "policy_conflict_counts": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "service_quality_variant_max_late_min": 5.93
+  },
+  "up_fig08": {
+    "source_csv": [
+      "07_problem3_event_response.csv",
+      "07_problem3_case_validation.csv"
+    ],
+    "scenarios": [
+      "cancel_future_order_1030",
+      "new_green_order_1330",
+      "time_window_pull_forward_1500",
+      "address_change_proxy_1200"
+    ],
+    "delta_total_cost": [
+      -528.51,
+      -2.42,
+      23.57,
+      -32.31
+    ],
+    "policy_conflict_count": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "changed_stop_count": [
+      1,
+      2,
+      1,
+      2
+    ]
+  },
+  "up_fig09": {
+    "source_csv": [
+      "07_problem3_case_validation.csv",
+      "problem3_frozen_segments/*.csv"
+    ],
+    "affected_trip_vehicle": [
+      "T0051 / F1-025",
+      "T0038 / E1-004",
+      "T0102 / F1-004",
+      "T0026 / E1-008"
+    ],
+    "frozen_segment_rows_by_scenario": {
+      "address_change_proxy_1200": 41,
+      "cancel_future_order_1030": 30,
+      "new_green_order_1330": 49,
+      "time_window_pull_forward_1500": 70
+    }
+  },
+  "up_fig10": {
+    "source_csv": [
+      "08_feasibility_validation_matrix.csv"
+    ],
+    "cases": [
+      "P1 formal",
+      "P2 formal",
+      "cancel_future_order_1030",
+      "new_green_order_1330",
+      "time_window_pull_forward_1500",
+      "address_change_proxy_1200"
+    ],
+    "coverage_all_true": true,
+    "capacity_all_true": true,
+    "physical_chain_all_true": true,
+    "non_na_policy_conflict_counts": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "max_late_min_values": [
+      31.6,
+      129.44,
+      129.44,
+      129.44,
+      129.44,
+      129.44
+    ],
+    "radar_rates": {
+      "覆盖": 1.0,
+      "容量": 1.0,
+      "车辆链": 1.0,
+      "政策0冲突": 1.0,
+      "迟到≤60min": 0.1667
+    }
+  }
+}
